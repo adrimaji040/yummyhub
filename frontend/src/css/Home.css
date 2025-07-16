@@ -1,0 +1,36 @@
+/* src/pages/Home.css */
+
+.hero-container {
+    position: relative;
+    height: 70vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-image: url("../img/food-home.jpg"); /* URL de la imagen de fondo */
+    background-size: cover;
+    background-position: center;
+}
+
+.overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5); /* Color con opacidad */
+}
+
+.content {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    color: #fff;
+}
+
+.search-box {
+    margin-top: 20px;
+    width: 100%;
+    max-width: 500px;
+    background-color: #fff;
+    border-radius: 4px;
+}
