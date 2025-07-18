@@ -1,10 +1,14 @@
-import React from "react";
 import "../css/Home.css";
+import Hero from "../components/Hero";
+import RecipesCards from "../components/RecipesCards";
+import CategoriesShowcase from "../components/CategoriesShowcase";
 
 function Home() {
   return (
     <>
-      <div>Hola</div>
+      <Hero />
+      <RecipesCards />
+      <CategoriesShowcase />
     </>
   );
 }

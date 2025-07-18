@@ -74,4 +74,16 @@ class Recipe extends Model
     {
         return $this->votes()->avg('rating');
     }
+
+    public function ingredientRecipes()
+    {
+        return $this->hasMany(RecipeIngredient::class);
+    }
+
+    public function favoritedBy()
+    {
+        return $this->belongsToMany(User::class, 'favorites')->withTimestamps();
+    }
+
+
 }
