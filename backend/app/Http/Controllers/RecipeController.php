@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Favorite;
 use App\Models\Recipe;
+use App\Models\RecipeIngredient;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -117,7 +118,9 @@ public function index(Request $request, $userId)
         return response()->json($recipe);
     }
 
-    public function store(Request $request)
+
+
+/*    public function store(Request $request)
 {
     $request->validate([
         'title' => 'required|string|max:255',
@@ -127,9 +130,11 @@ public function index(Request $request, $userId)
         'servings' => 'nullable|integer',
         'user_id' => 'required|exists:users,id',
         'category_id' => 'required|exists:categories,id',
-        'ingredients' => 'required|array',
+        'cover_photo_url' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+        'ingredients' => 'required|array|min:1',
         'ingredients.*.id' => 'required|exists:ingredients,id',
-        'ingredients.*.quantity' => 'required|string|max:100',
+        'ingredients.*.quantity' => 'required|integer|min:1',
+        'ingredients.*.unit_id' => 'required|exists:units,id',
     ]);
 
     $recipe = Recipe::create([
@@ -144,11 +149,69 @@ public function index(Request $request, $userId)
     ]);
 
     foreach ($request->ingredients as $ingredient) {
-        $recipe->ingredients()->attach($ingredient['id'], ['quantity' => $ingredient['quantity']]);
+        RecipeIngredient::create([
+            'recipe_id' => $recipe->id,
+            'ingredient_id' => $ingredient['id'],
+            'quantity' => $ingredient['quantity'],
+            'unit_id' => $ingredient['unit_id'],
+        ]);
     }
 
-    return response()->json($recipe->load('ingredients'), 201);
+    return response()->json(
+        $recipe->load(['recipeIngredients.ingredient']), 
+        201
+    );
+}*/
+
+public function store(Request $request)
+{
+    $request->validate([
+        'title' => 'required|string|max:255',
+        'description' => 'nullable|string',
+        'instructions' => 'nullable|string',
+        'cooking_time' => 'nullable|integer|min:1', // 👈 cambio a integer
+        'servings' => 'nullable|integer|min:1',
+        'user_id' => 'required|exists:users,id',
+        'category_id' => 'required|exists:categories,id',
+        'cover_photo_url' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+        'ingredients' => 'required|array|min:1',
+        'ingredients.*.id' => 'required|exists:ingredients,id',
+        'ingredients.*.quantity' => 'required|integer|min:1',
+        'ingredients.*.unit_id' => 'required|exists:units,id',
+    ]);
+
+    // 1️⃣ Guardar la receta
+    $recipe = Recipe::create([
+        'title' => $request->title,
+        'description' => $request->description,
+        'instructions' => $request->instructions,
+        'cooking_time' => $request->cooking_time,
+        'servings' => $request->servings ?? 1,
+        'user_id' => $request->user_id,
+        'category_id' => $request->category_id,
+        'cover_photo_url' => $request->file('cover_photo_url')
+            ? $request->file('cover_photo_url')->store('cover_photos', 'public')
+            : 'cover_photos/default.jpg', // 👈 valor por defecto
+    ]);
+
+    // 2️⃣ Guardar los ingredientes
+    foreach ($request->ingredients as $ingredient) {
+        RecipeIngredient::create([
+            'recipe_id' => $recipe->id,
+            'ingredient_id' => $ingredient['id'],
+            'quantity' => $ingredient['quantity'],
+            'unit_id' => $ingredient['unit_id'],
+        ]);
+    }
+
+    // 3️⃣ Devolver receta con ingredientes
+    return response()->json(
+        $recipe->load(['recipeIngredients.ingredient', 'recipeIngredients.unit']),
+        201
+    );
 }
+
+
 
 
     public function update(Request $request, $id)

@@ -100,7 +100,11 @@ function Recipe() {
       </Box>
       <Box sx={{ width: "100%" }}>
         <img
-          src={"/upload/default.jpg"}
+          src={
+            recipe.cover_photo_url
+              ? recipe.cover_photo_url
+              : "/upload/default.jpg"
+          }
           alt={recipe.title}
           style={{ width: "100%", height: "auto" }}
         />

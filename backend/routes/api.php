@@ -69,6 +69,7 @@ Route::delete('/comments/{id}', [CommentController::class, 'destroy'])->middlewa
 
 //Ingredients
 Route::get('/ingredients', [IngredientController::class, 'index']);
+Route::post('/ingredient', [IngredientController::class, 'store'])->middleware('auth:sanctum');
 
 
 
