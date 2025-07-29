@@ -41,7 +41,7 @@ Route::get('/related-recipes/{id}', [RecipeController::class, 'getRelatedRecipes
 //Gett all recipes
 Route::get('/recipes', [RecipeController::class, 'index']);
 //Search a word in recipes
-Route::get('/recipes', [RecipeController::class, 'searchWord']);
+//Route::get('/recipes', [RecipeController::class, 'searchWord']);
 Route::get('/recipe/{id}', [RecipeController::class, 'show']);
 Route::get('/latest-recipe', [RecipeController::class, 'latest']);
 

@@ -59,6 +59,7 @@ function Recipe() {
 
   return (
     <Container maxWidth="lg" sx={{ py: 10 }}>
+      {console.log(recipe)}
       <Box
         sx={{
           mb: 4,
@@ -87,7 +88,7 @@ function Recipe() {
               }}
             >
               <Avatar sx={{ bgcolor: red[500] }} aria-label="recipe">
-                {recipe.user_name[0]?.toUpperCase() || "R"}
+                {recipe.user_name?.charAt(0).toUpperCase() || "R"}
               </Avatar>
               <Typography>{recipe.user_name}</Typography>
             </Grid>
