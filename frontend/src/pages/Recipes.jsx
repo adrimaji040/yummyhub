@@ -1,5 +1,5 @@
 // src/components/Recipes.js
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Container, Grid, Typography } from "@mui/material";
 import AllRecipes from "../components/AllRecipes";
 import RecipeSearch from "../components/RecipeSearch";
@@ -149,6 +149,9 @@ const Recipes = () => {
         </Grid>
         <Grid size={9}>
           <RecipeSearch onSearch={handleSearch} />
+          <Typography variant="h4" gutterBottom>
+            All Recipes
+          </Typography>
           <AllRecipes recipes={recipes} loading={loading} error={error} />
         </Grid>
       </Grid>

@@ -76,7 +76,7 @@ const CardWithMenu = ({ recipe, onDelete }) => {
       <CardHeader
         avatar={
           <Avatar sx={{ bgcolor: red[500] }} aria-label="recipe">
-            {recipe.user.name[0]?.toUpperCase() || "R"}
+            {recipe.user_name[0]?.toUpperCase() || "R"}
           </Avatar>
         }
         action={
