@@ -22,28 +22,32 @@ class CommentController extends Controller
      * @return \Illuminate\Http\JsonResponse
      */
     public function store(Request $request)
-    {
-        // Ensure the user is authenticated
-        $user = Auth::user();
-        if (!$user) {
-            return response()->json(['message' => 'Unauthorized'], 401);
-        }
-
-        // Validate the request
-        $request->validate([
-            'recipe_id' => 'required|exists:recipes,id',
-            'content' => 'required|string|max:1000',
-        ]);
-
-        // Create a new comment
-        $comment = Comment::create([
-            'user_id' => $user->id, // Get the ID of the authenticated user
-            'recipe_id' => $request->input('recipe_id'),
-            'content' => $request->input('content'),
-        ]);
-
-        return response()->json($comment, 201);
+{
+    // Ensure the user is authenticated
+    $user = Auth::user();
+    if (!$user) {
+        return response()->json(['message' => 'Unauthorized'], 401);
     }
+
+    // Validate the request
+    $request->validate([
+        'recipe_id' => 'required|exists:recipes,id',
+        'content' => 'required|string|max:1000',
+    ]);
+
+    // Create a new comment
+    $comment = Comment::create([
+        'user_id' => $user->id, 
+        'recipe_id' => $request->input('recipe_id'),
+        'content' => $request->input('content'),
+    ]);
+
+    // Load user relation so frontend gets user info
+    $comment->load('user');
+
+    return response()->json($comment, 201);
+}
+
 
 
     /**

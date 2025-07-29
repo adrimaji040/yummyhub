@@ -59,6 +59,7 @@ function Recipe() {
 
   return (
     <Container maxWidth="lg" sx={{ py: 10 }}>
+      {console.log(recipe)}
       <Box
         sx={{
           mb: 4,
@@ -87,7 +88,7 @@ function Recipe() {
               }}
             >
               <Avatar sx={{ bgcolor: red[500] }} aria-label="recipe">
-                {recipe.user_name[0]?.toUpperCase() || "R"}
+                {recipe.user_name?.charAt(0).toUpperCase() || "R"}
               </Avatar>
               <Typography>{recipe.user_name}</Typography>
             </Grid>
@@ -99,7 +100,11 @@ function Recipe() {
       </Box>
       <Box sx={{ width: "100%" }}>
         <img
-          src={"/upload/default.jpg"}
+          src={
+            recipe.cover_photo_url
+              ? recipe.cover_photo_url
+              : "/upload/default.jpg"
+          }
           alt={recipe.title}
           style={{ width: "100%", height: "auto" }}
         />

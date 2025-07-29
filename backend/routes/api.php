@@ -23,9 +23,7 @@ Route::middleware('auth:sanctum')->post('/change-password/{id}', [UserController
 Route::get('/users', [UserController::class, 'index']);
 Route::get('/users/{id}', [UserController::class, 'show']);
 Route::post('/users', [UserController::class, 'store']);
-//Register new user
 Route::post('/register', [UserController::class, 'register']);
-
 Route::put('/users/{id}', [UserController::class, 'update']);
 Route::delete('/users/{id}', [UserController::class, 'destroy']);
 
@@ -39,9 +37,9 @@ Route::get('/related-recipes/{id}', [RecipeController::class, 'getRelatedRecipes
 
 
 //Gett all recipes
-Route::get('/recipes', [RecipeController::class, 'index']);
+Route::get('/recipes', [RecipeController::class, 'getAllRecipes']);
 //Search a word in recipes
-Route::get('/recipes', [RecipeController::class, 'searchWord']);
+//Route::get('/recipes', [RecipeController::class, 'searchWord']);
 Route::get('/recipe/{id}', [RecipeController::class, 'show']);
 Route::get('/latest-recipe', [RecipeController::class, 'latest']);
 
@@ -71,6 +69,7 @@ Route::delete('/comments/{id}', [CommentController::class, 'destroy'])->middlewa
 
 //Ingredients
 Route::get('/ingredients', [IngredientController::class, 'index']);
+Route::post('/ingredient', [IngredientController::class, 'store'])->middleware('auth:sanctum');
 
 
 
@@ -84,7 +83,7 @@ Route::get('/recipes/{id}/rating', [RecipeController::class, 'getAverageRating']
 
 //Favorite recipes
 Route::middleware('auth:sanctum')->post('/recipe/{id}/favorite', [RecipeController::class, 'toggleFavorite']);
-Route::middleware('auth:sanctum')->get('/favorites', [RecipeController::class, 'getFavorites']);
+Route::middleware('auth:sanctum')->get('/favorites', [FavoriteController::class, 'index']);
 
 
 //rating
