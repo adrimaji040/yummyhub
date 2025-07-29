@@ -35,16 +35,16 @@ class RecipeController extends Controller
     }
 */
 
-public function index(Request $request)
+public function index(Request $request, $userId)
 {
-    $search = $request->input('search');
+   $search = $request->input('search');
 
     // Construir la query base con joins
-    $query = Recipe::select(
+    $query = Recipe::where('user_id', $userId)
+        ->select(
             'recipes.*',
             'categories.name as category_name',
-            'users.name as user_name',
-            'users.id as user_id'
+            'users.name as user_name'
         )
         ->join('categories', 'recipes.category_id', '=', 'categories.id')
         ->join('users', 'recipes.user_id', '=', 'users.id');
@@ -303,5 +303,37 @@ public function getRelatedRecipes($id)
         $favorites = $user->favorites()->with('user', 'category')->get();
         return response()->json($favorites);
     }
+
+
+    
+public function getAllRecipes(Request $request)
+{
+    $search = $request->input('search');
+
+    // Construir la query base con joins
+    $query = Recipe::select(
+            'recipes.*',
+            'categories.name as category_name',
+            'users.name as user_name',
+            'users.id as user_id'
+        )
+        ->join('categories', 'recipes.category_id', '=', 'categories.id')
+        ->join('users', 'recipes.user_id', '=', 'users.id');
+
+    // Si hay término de búsqueda, aplicar filtros
+    if (!empty($search)) {
+        $query->where(function($q) use ($search) {
+            $q->where('recipes.title', 'like', "%{$search}%")
+              ->orWhere('recipes.description', 'like', "%{$search}%")
+              ->orWhere('recipes.instructions', 'like', "%{$search}%");
+        });
+    }
+
+    // Obtener recetas (todas o filtradas)
+    $recipes = $query->get();
+
+    return response()->json($recipes, 200);
+}
+
 
 }

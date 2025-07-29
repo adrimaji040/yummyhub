@@ -5,9 +5,6 @@ import Card from "./Card";
 const AllRecipes = ({ recipes, loading, error }) => {
   return (
     <Box sx={{ my: 5 }}>
-      <Typography variant="h4" gutterBottom>
-        All Recipes
-      </Typography>
       {error && (
         <Typography color="error" gutterBottom>
           {error}
