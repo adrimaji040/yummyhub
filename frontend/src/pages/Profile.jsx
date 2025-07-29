@@ -30,7 +30,6 @@ const Profile = () => {
       });
 
       if (!response.ok) throw new Error("Failed to fetch user");
-
       const data = await response.json();
       setCurrentUser(data);
     } catch (error) {

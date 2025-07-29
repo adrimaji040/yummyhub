@@ -75,7 +75,7 @@ class Recipe extends Model
         return $this->votes()->avg('rating');
     }
 
-    public function ingredientRecipes()
+    public function recipeIngredients()
     {
         return $this->hasMany(RecipeIngredient::class);
     }
