@@ -42,7 +42,7 @@ const AddRecipe = () => {
         const data = await response.json();
         setCategories(data);
       } catch (error) {
-        setError("Failed to load categories.");
+        setError("Failed to load categories.", error.message);
       }
     };
 
@@ -72,16 +72,14 @@ const AddRecipe = () => {
     formData.append("servings", servings);
     formData.append("category_id", selectedCategory); // Add selected category ID
     formData.append("user_id", userId);
-    formData.append("ingredients", JSON.stringify(ingredients)); 
-
-    // Adriana Add this code, begin
-    /* ingredients.forEach((item, index) => {
-      formData.append(`ingredients[${index}][id]`, item.ingredient.id);
-      formData.append(`ingredients[${index}][quantity]`, 1);
-      formData.append(`ingredients[${index}][unit_id]`, 1);
+    ingredients.forEach((ingredient, index) => {
+      formData.append(`ingredients[${index}][id]`, ingredient.id);
+      formData.append(
+        `ingredients[${index}][quantity]`,
+        parseInt(ingredient.quantity)
+      );
+      formData.append(`ingredients[${index}][unit_id]`, ingredient.unit_id);
     });
-
-    // End Adriana add code*/
 
     console.log(Array.from(formData.entries()));
 

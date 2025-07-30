@@ -1,40 +1,49 @@
-// src/pages/Profile.js
-import React, { useEffect, useState } from "react";
-import { Container, Typography, Box, CircularProgress } from "@mui/material";
-import { useNavigate } from "react-router-dom";
+import React, { useEffect, useState, useContext } from "react";
+import {
+  Container,
+  Typography,
+  Box,
+  CircularProgress,
+  Stack,
+  Skeleton,
+  Grid,
+} from "@mui/material";
 import RecipesByUserCards from "../components/RecipesByUserCards";
+import { UserContext } from "../store/UserContext";
 
 const Profile = () => {
-  const [user, setUser] = useState(null);
+  const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const navigate = useNavigate();
+
+  const { user } = useContext(UserContext);
+
+  const getUser = async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const response = await fetch("http://localhost:8000/api/user", {
+        headers: {
+          Accept: "application/json",
+          Authorization: `Bearer ${user?.token}`,
+        },
+      });
+
+      if (!response.ok) throw new Error("Failed to fetch user");
+      const data = await response.json();
+      setCurrentUser(data);
+    } catch (error) {
+      setError(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const token = localStorage.getItem("token"); // Obtener el token del almacenamiento local
-
-    if (!token) {
-      navigate("/login"); // Redirigir a login si no hay token
-      return;
+    if (user?.token) {
+      getUser();
     }
-
-    fetch("http://127.0.0.1:8000/api/user", {
-      // Endpoint to get the data info
-      headers: {
-        Authorization: `Bearer ${token}`,
-        Accept: "application/json",
-      },
-    })
-      .then((response) => response.json())
-      .then((data) => {
-        setUser(data);
-        setLoading(false);
-      })
-      .catch((error) => {
-        setError("Failed to fetch user data.");
-        setLoading(false);
-      });
-  }, [navigate]);
+  }, [user]);
 
   if (loading)
     return (
@@ -53,19 +62,27 @@ const Profile = () => {
   if (error) return <Typography color="error">{error}</Typography>;
 
   return (
-    <Container>
+    <Container maxWidth="lg" sx={{ my: 10 }}>
       <Box sx={{ my: 4 }}>
         <Typography variant="h4">Profile</Typography>
-        {user ? (
+        {currentUser ? (
           <Box sx={{ mt: 2 }}>
-            <Typography variant="h6">Welcome, {user.name}!</Typography>
-            <Typography>Email: {user.email}</Typography>
+            <Typography variant="h6">Welcome, {currentUser.name}!</Typography>
+            <Typography>Email: {currentUser.email}</Typography>
           </Box>
         ) : (
           <Typography>No user data available.</Typography>
         )}
       </Box>
-      {user && <RecipesByUserCards userId={user.id} />}
+
+      <Typography variant="h4" gutterBottom>
+        My recipes
+      </Typography>
+      <Grid container>
+        <Grid size={12} sx={{ mb: 3 }}>
+          {currentUser && <RecipesByUserCards userId={currentUser.id} />}
+        </Grid>
+      </Grid>
     </Container>
   );
 };

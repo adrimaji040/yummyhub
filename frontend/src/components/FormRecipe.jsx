@@ -1,4 +1,3 @@
-// src/components/FormRecipe.js
 import {
   Button,
   TextField,
@@ -11,7 +10,8 @@ import {
   Typography,
   Autocomplete,
 } from "@mui/material";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
+import { UserContext } from "../store/UserContext";
 
 const FormRecipe = ({
   title,
@@ -20,8 +20,6 @@ const FormRecipe = ({
   setCoverPhoto,
   ingredients,
   setIngredients,
-  units,
-  setUnits,
   description,
   setDescription,
   instructions,
@@ -36,12 +34,14 @@ const FormRecipe = ({
   handleSubmit,
   coverPhotoUrl,
 }) => {
+  const { user } = useContext(UserContext);
+
   const base_path = (path) => `${window.location.origin}/${path}`;
 
   const [allUnits, setAllUnits] = useState([]);
   const [unitInput, setUnitInput] = useState(null);
 
-  const [allIngredients, setAllIngredients] = useState([]); // ingredientes desde el backend
+  const [allIngredients, setAllIngredients] = useState([]);
   const [ingredientInput, setIngredientInput] = useState(null);
   const [ingredientQty, setIngredientQty] = useState("");
 
@@ -52,7 +52,7 @@ const FormRecipe = ({
     ])
       .then(([ingredientsData, unitsData]) => {
         setAllIngredients(ingredientsData);
-        setAllUnits(unitsData); // asegúrate de tener este state creado
+        setAllUnits(unitsData);
       })
       .catch((error) => {
         console.error("Error al cargar datos:", error);
@@ -94,6 +94,7 @@ const FormRecipe = ({
           )}
         </Box>
       </Grid>
+
       <Grid size={8}>
         <form onSubmit={handleSubmit}>
           <TextField
@@ -105,6 +106,7 @@ const FormRecipe = ({
             onChange={(e) => setTitle(e.target.value)}
             required
           />
+
           <TextField
             fullWidth
             type="file"
@@ -112,6 +114,7 @@ const FormRecipe = ({
             variant="outlined"
             onChange={(e) => setCoverPhoto(e.target.files[0])}
           />
+
           <TextField
             fullWidth
             label="Description"
@@ -123,6 +126,7 @@ const FormRecipe = ({
             onChange={(e) => setDescription(e.target.value)}
             required
           />
+
           <TextField
             fullWidth
             label="Instructions"
@@ -134,6 +138,7 @@ const FormRecipe = ({
             onChange={(e) => setInstructions(e.target.value)}
             required
           />
+
           <TextField
             fullWidth
             label="Cooking Time (minutes)"
@@ -143,6 +148,7 @@ const FormRecipe = ({
             value={cookingTime}
             onChange={(e) => setCookingTime(e.target.value)}
           />
+
           <TextField
             fullWidth
             label="Servings"
@@ -153,6 +159,7 @@ const FormRecipe = ({
             value={servings}
             onChange={(e) => setServings(e.target.value)}
           />
+
           <FormControl fullWidth margin="normal">
             <InputLabel>Category</InputLabel>
             <Select
@@ -178,39 +185,94 @@ const FormRecipe = ({
               onChange={(e) => setIngredientQty(e.target.value)}
               sx={{ width: "20%" }}
             />
+
             <Autocomplete
               disablePortal
               options={allUnits}
               getOptionLabel={(option) => option.name}
+              value={unitInput}
               onChange={(event, newValue) => setUnitInput(newValue)}
               sx={{ width: "40%" }}
               renderInput={(params) => <TextField {...params} label="Unit" />}
             />
+
             <Autocomplete
+              sx={{ width: "60%" }}
+              freeSolo
               disablePortal
               options={allIngredients}
-              getOptionLabel={(option) => option.name}
-              onChange={(event, newValue) => setIngredientInput(newValue)}
-              sx={{ width: "60%" }}
+              getOptionLabel={(option) =>
+                typeof option === "string" ? option : option.name
+              }
+              value={ingredientInput}
+              onChange={(event, newValue) => {
+                if (typeof newValue === "string") {
+                  setIngredientInput({ id: null, name: newValue, isNew: true });
+                } else {
+                  setIngredientInput(newValue);
+                }
+              }}
+              onInputChange={(event, newInputValue) => {
+                if (newInputValue) {
+                  setIngredientInput({
+                    id: null,
+                    name: newInputValue,
+                    isNew: true,
+                  });
+                }
+              }}
               renderInput={(params) => (
                 <TextField {...params} label="Ingredient" />
               )}
             />
+
             <Button
               variant="contained"
-              onClick={() => {
+              onClick={async () => {
                 if (ingredientInput && ingredientQty && unitInput) {
+                  let ingredientToSave = ingredientInput;
+                  if (ingredientInput.isNew) {
+                    try {
+                      const response = await fetch(
+                        "http://127.0.0.1:8000/api/ingredient",
+                        {
+                          method: "POST",
+                          headers: {
+                            "Content-Type": "application/json",
+                            Authorization: `Bearer ${user?.token}`,
+                            Accept: "application/json",
+                          },
+                          body: JSON.stringify({ name: ingredientInput.name }),
+                        }
+                      );
+
+                      if (!response.ok) {
+                        throw new Error("Error al crear el ingrediente");
+                      }
+
+                      const newIngredient = await response.json();
+                      ingredientToSave = newIngredient;
+                      setAllIngredients((prev) => [...prev, newIngredient]);
+                    } catch (error) {
+                      console.error("Error al crear ingrediente:", error);
+                      return;
+                    }
+                  }
+
                   setIngredients((prev) => [
                     ...prev,
                     {
-                      ingredient: ingredientInput,
+                      id: ingredientToSave.id,
                       quantity: ingredientQty,
+                      unit_id: unitInput.id,
+                      ingredient: ingredientToSave,
                       unit: unitInput,
                     },
                   ]);
+
                   setIngredientInput(null);
                   setIngredientQty("");
-                  setUnits(null);
+                  setUnitInput(null);
                 }
               }}
             >
@@ -230,11 +292,13 @@ const FormRecipe = ({
                 }}
               >
                 <Grid container spacing={2}>
-                  <Grid size={2}>
-                    {item.quantity} {item.unit?.name || item.unit}
+                  <Grid item xs={2}>
+                    {item.quantity} {item.unit?.name}
                   </Grid>
-                  <Grid size={8}>{item.ingredient.name}</Grid>
-                  <Grid size={1}>
+                  <Grid item xs={8}>
+                    {item.ingredient.name}
+                  </Grid>
+                  <Grid item xs={1}>
                     <Button
                       size="small"
                       color="error"

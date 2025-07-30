@@ -24,6 +24,7 @@ const Comments = ({ recipeId }) => {
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState("success");
   const [rating, setRating] = useState(0);
+  const [commentError, setCommentError] = useState(false);
 
   const { user } = useUser();
   const isLoggedIn = !!user;
@@ -84,6 +85,13 @@ const Comments = ({ recipeId }) => {
       setSnackbarOpen(true);
       return;
     }
+
+    if (!newComment.trim()) {
+      setCommentError(true);
+      return;
+    }
+
+    setCommentError(false);
 
     try {
       const response = await fetch("http://127.0.0.1:8000/api/comments", {
@@ -164,13 +172,10 @@ const Comments = ({ recipeId }) => {
   return (
     <Box sx={{ mt: 4 }}>
       <Typography variant="h4" sx={{ pt: 10 }}>
-        Comments
+        Rate this Recipe
       </Typography>
-      {error && <Typography color="error">{error}</Typography>}
-
       {/* Rating */}
-      <Box sx={{ mt: 2, mb: 4 }}>
-        <Typography component="legend">Rate this recipe</Typography>
+      <Box sx={{ mt: 2, mb: 1 }}>
         <Rating
           name="recipe-rating"
           value={rating}
@@ -178,7 +183,10 @@ const Comments = ({ recipeId }) => {
           precision={1}
         />
       </Box>
-
+      <Typography variant="h4" sx={{ pt: 3 }}>
+        Add your comment
+      </Typography>
+      {error && <Typography color="error">{error}</Typography>}
       <List>
         {comments.length === 0 ? (
           <Typography>No comments yet. Be the first to comment!</Typography>
@@ -210,12 +218,17 @@ const Comments = ({ recipeId }) => {
           label="Add a comment"
           value={newComment}
           onChange={(e) => setNewComment(e.target.value)}
+          error={commentError}
+          helperText={
+            commentError ? "Please enter a comment before submitting." : ""
+          }
         />
         <Button
           variant="contained"
           color="primary"
           sx={{ mt: 2 }}
           onClick={handleAddComment}
+          disabled={!newComment.trim()} // 👈 botón deshabilitado si no hay texto
         >
           Add Comment
         </Button>

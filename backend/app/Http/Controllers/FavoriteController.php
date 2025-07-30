@@ -3,10 +3,30 @@
 namespace App\Http\Controllers;
 
 use App\Models\Favorite;
+use App\Models\Recipe;
 use Illuminate\Http\Request;
 
 class FavoriteController extends Controller
 {
+    public function index(Request $request)
+    {
+        $user = $request->user();
+
+        $favorites = Recipe::select(
+                'recipes.*',
+                'categories.name as category_name',
+                'users.name as user_name',
+                'users.id as user_id'
+            )
+            ->join('favorites', 'recipes.id', '=', 'favorites.recipe_id')
+            ->join('categories', 'recipes.category_id', '=', 'categories.id')
+            ->join('users', 'recipes.user_id', '=', 'users.id')
+            ->where('favorites.user_id', $user->id)
+            ->get();
+
+        return response()->json($favorites, 200);
+    }
+
     public function isFavorite($recipeId, Request $request)
     {
         $user = $request->user();

@@ -84,6 +84,8 @@ function Header() {
                   + Add Recipe
                 </NavLink>
                 <NavLink to="/profile">Dashboard</NavLink>
+                <NavLink to="/favorites">My Favorites</NavLink>
+
                 <Button
                   variant="contained"
                   onClick={() => {

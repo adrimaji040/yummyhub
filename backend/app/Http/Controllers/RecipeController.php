@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Favorite;
 use App\Models\Recipe;
+use App\Models\RecipeIngredient;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -13,19 +14,58 @@ use Illuminate\Support\Facades\DB;
 class RecipeController extends Controller
 {
     
-    
-    public function index(User $user){
-            
-        $recipes = $user->recipes()->with('user')->get();
+    /*
+    public function index()
+{
+    $recipes = Recipe::select(
+        'recipes.*',
+        'categories.name as category_name',
+        'users.name as user_name',
+        'users.id as user_id'
+    )
+    ->join('categories', 'recipes.category_id', '=', 'categories.id')
+    ->join('users', 'recipes.user_id', '=', 'users.id')
+    ->get();
 
-        return response()->json($recipes);
-    }
+    return response()->json($recipes, 200);
+}
 /*
     public function index(){
         $recipes = Recipe::all();
         return response()->json($recipes,200);
     }
 */
+
+public function index(Request $request, $userId)
+{
+   $search = $request->input('search');
+
+    // Construir la query base con joins
+    $query = Recipe::where('user_id', $userId)
+        ->select(
+            'recipes.*',
+            'categories.name as category_name',
+            'users.name as user_name'
+        )
+        ->join('categories', 'recipes.category_id', '=', 'categories.id')
+        ->join('users', 'recipes.user_id', '=', 'users.id');
+
+    // Si hay término de búsqueda, aplicar filtros
+    if (!empty($search)) {
+        $query->where(function($q) use ($search) {
+            $q->where('recipes.title', 'like', "%{$search}%")
+              ->orWhere('recipes.description', 'like', "%{$search}%")
+              ->orWhere('recipes.instructions', 'like', "%{$search}%");
+        });
+    }
+
+    // Obtener recetas (todas o filtradas)
+    $recipes = $query->get();
+
+    return response()->json($recipes, 200);
+}
+
+
     public function searchWord(Request $request)
     {
         // Get the search term from the query parameter
@@ -78,7 +118,9 @@ class RecipeController extends Controller
         return response()->json($recipe);
     }
 
-    public function store(Request $request)
+
+
+/*    public function store(Request $request)
 {
     $request->validate([
         'title' => 'required|string|max:255',
@@ -88,10 +130,11 @@ class RecipeController extends Controller
         'servings' => 'nullable|integer',
         'user_id' => 'required|exists:users,id',
         'category_id' => 'required|exists:categories,id',
-        'ingredients' => 'required|array',
+        'cover_photo_url' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+        'ingredients' => 'required|array|min:1',
         'ingredients.*.id' => 'required|exists:ingredients,id',
-        'ingredients.*.quantity' => 'required|string|max:100',
-        'ingredients.*.unit' => 'required|string|max:100',
+        'ingredients.*.quantity' => 'required|integer|min:1',
+        'ingredients.*.unit_id' => 'required|exists:units,id',
     ]);
 
     $recipe = Recipe::create([
@@ -106,16 +149,74 @@ class RecipeController extends Controller
     ]);
 
     foreach ($request->ingredients as $ingredient) {
-        $recipe->ingredients()->attach($ingredient['id'], ['quantity' => $ingredient['quantity']]);
+        RecipeIngredient::create([
+            'recipe_id' => $recipe->id,
+            'ingredient_id' => $ingredient['id'],
+            'quantity' => $ingredient['quantity'],
+            'unit_id' => $ingredient['unit_id'],
+        ]);
     }
 
-    return response()->json($recipe->load('ingredients'), 201);
+    return response()->json(
+        $recipe->load(['recipeIngredients.ingredient']), 
+        201
+    );
+}*/
+
+public function store(Request $request)
+{
+    $request->validate([
+        'title' => 'required|string|max:255',
+        'description' => 'nullable|string',
+        'instructions' => 'nullable|string',
+        'cooking_time' => 'nullable|integer|min:1', // 👈 cambio a integer
+        'servings' => 'nullable|integer|min:1',
+        'user_id' => 'required|exists:users,id',
+        'category_id' => 'required|exists:categories,id',
+        'cover_photo_url' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+        'ingredients' => 'required|array|min:1',
+        'ingredients.*.id' => 'required|exists:ingredients,id',
+        'ingredients.*.quantity' => 'required|integer|min:1',
+        'ingredients.*.unit_id' => 'required|exists:units,id',
+    ]);
+
+    // 1️ Save recipe
+    $recipe = Recipe::create([
+        'title' => $request->title,
+        'description' => $request->description,
+        'instructions' => $request->instructions,
+        'cooking_time' => $request->cooking_time,
+        'servings' => $request->servings ?? 1,
+        'user_id' => $request->user_id,
+        'category_id' => $request->category_id,
+        'cover_photo_url' => $request->file('cover_photo_url')
+            ? $request->file('cover_photo_url')->store('cover_photos', 'public')
+            : 'cover_photos/default.jpg', // valor por defecto
+    ]);
+
+    // 2️ Save ingredients
+    foreach ($request->ingredients as $ingredient) {
+        RecipeIngredient::create([
+            'recipe_id' => $recipe->id,
+            'ingredient_id' => $ingredient['id'],
+            'quantity' => $ingredient['quantity'],
+            'unit_id' => $ingredient['unit_id'],
+        ]);
+    }
+
+    // 3 Return response
+    return response()->json(
+        $recipe->load(['recipeIngredients.ingredient', 'recipeIngredients.unit']),
+        201
+    );
 }
+
+
 
 
     public function update(Request $request, $id)
     {
-        // Validar los datos de entrada
+        // Validate the request data
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'cover_photo_url' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
@@ -127,15 +228,15 @@ class RecipeController extends Controller
             'user_id' => 'required|integer', // Agrega la validación para user_id
         ]);
 
-        // Encontrar la receta existente
+        // Find the recipe by ID
         $recipe = Recipe::find($id);
 
-        // Verificar si la receta existe
+        // Verify if the recipe exists
         if (!$recipe) {
             return response()->json(['message' => 'Recipe not found'], 404);
         }
 
-        // Actualizar los atributos de la receta
+        // Update the recipe attributes
         $recipe->title = $validated['title'];
         $recipe->description = $validated['description'];
         $recipe->instructions = $validated['instructions'];
@@ -144,7 +245,7 @@ class RecipeController extends Controller
         $recipe->category_id = $validated['category_id'];
         $recipe->user_id = $validated['user_id']; // Usa el user_id de la solicitud
 
-        // Manejar la carga de una nueva imagen si se proporciona
+        // Handle the cover photo upload
         if ($request->hasFile('cover_photo_url')) {
             // Eliminar la imagen anterior si existe
             if ($recipe->cover_photo_url && file_exists(public_path($recipe->cover_photo_url))) {
@@ -195,18 +296,25 @@ class RecipeController extends Controller
         return response()->json(['message' => 'Recipe deleted successfully'], 200);
     }
 
+public function getRelatedRecipes($id)
+{
+    $recipe = Recipe::findOrFail($id);
 
-    public function getRelatedRecipes($id)
-    {
-        // Obtén las recetas relacionadas, por ejemplo, por categoría.
-        $recipe = Recipe::findOrFail($id);
-        $relatedRecipes = Recipe::where('category_id', $recipe->category_id)
-            ->where('id', '!=', $id)
-            ->take(4)
-            ->get();
-        return response()->json($relatedRecipes);
-    }
+    $relatedRecipes = Recipe::select(
+            'recipes.*',
+            'categories.name as category_name',
+            'users.name as user_name',
+            'users.id as user_id'
+        )
+        ->join('categories', 'recipes.category_id', '=', 'categories.id')
+        ->join('users', 'recipes.user_id', '=', 'users.id')
+        ->where('recipes.category_id', $recipe->category_id)
+        ->where('recipes.id', '!=', $id)
+        ->take(4)
+        ->get();
 
+    return response()->json($relatedRecipes);
+}
 
     /** FAVORITES */
     public function getAverageRating($id)
@@ -258,5 +366,37 @@ class RecipeController extends Controller
         $favorites = $user->favorites()->with('user', 'category')->get();
         return response()->json($favorites);
     }
+
+
+    
+public function getAllRecipes(Request $request)
+{
+    $search = $request->input('search');
+
+    // Construir la query base con joins
+    $query = Recipe::select(
+            'recipes.*',
+            'categories.name as category_name',
+            'users.name as user_name',
+            'users.id as user_id'
+        )
+        ->join('categories', 'recipes.category_id', '=', 'categories.id')
+        ->join('users', 'recipes.user_id', '=', 'users.id');
+
+    // Si hay término de búsqueda, aplicar filtros
+    if (!empty($search)) {
+        $query->where(function($q) use ($search) {
+            $q->where('recipes.title', 'like', "%{$search}%")
+              ->orWhere('recipes.description', 'like', "%{$search}%")
+              ->orWhere('recipes.instructions', 'like', "%{$search}%");
+        });
+    }
+
+    // Obtener recetas (todas o filtradas)
+    $recipes = $query->get();
+
+    return response()->json($recipes, 200);
+}
+
 
 }
