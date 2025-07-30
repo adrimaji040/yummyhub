@@ -1,5 +1,7 @@
 import { useState } from "react";
 
+// have a feature to automatically add items to the shopping list from a recipe
+
 function ShoppingList() {
   const [items, setItems] = useState([]); // State for the list of items
   const [newItem, setNewItem] = useState(""); // State for the input field
