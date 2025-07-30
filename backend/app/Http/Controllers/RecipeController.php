@@ -91,6 +91,7 @@ class RecipeController extends Controller
         'ingredients' => 'required|array',
         'ingredients.*.id' => 'required|exists:ingredients,id',
         'ingredients.*.quantity' => 'required|string|max:100',
+        'ingredients.*.unit' => 'required|string|max:100',
     ]);
 
     $recipe = Recipe::create([

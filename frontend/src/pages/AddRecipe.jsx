@@ -72,7 +72,16 @@ const AddRecipe = () => {
     formData.append("servings", servings);
     formData.append("category_id", selectedCategory); // Add selected category ID
     formData.append("user_id", userId);
-    formData.append("ingredients", JSON.stringify(ingredients));
+    formData.append("ingredients", JSON.stringify(ingredients)); 
+
+    // Adriana Add this code, begin
+    /* ingredients.forEach((item, index) => {
+      formData.append(`ingredients[${index}][id]`, item.ingredient.id);
+      formData.append(`ingredients[${index}][quantity]`, 1);
+      formData.append(`ingredients[${index}][unit_id]`, 1);
+    });
+
+    // End Adriana add code*/
 
     console.log(Array.from(formData.entries()));
 

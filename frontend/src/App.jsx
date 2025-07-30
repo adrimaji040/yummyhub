@@ -14,6 +14,7 @@ import Register from "./pages/Register";
 import AddRecipe from "./pages/AddRecipe";
 import Recipe from "./pages/Recipe";
 import Recipes from "./pages/Recipes";
+import MealPlanListPage from "./pages/MealPlanListPage";
 
 import { ThemeProvider } from "@mui/material/styles";
 import theme from "./theme";
@@ -35,6 +36,7 @@ function AppContent() {
         <Route path="/recipe/add" element={<AddRecipe />} />{" "}
         <Route path="/recipe/:id" element={<Recipe />} />
         <Route path="/recipes" element={<Recipes />} />
+        <Route path="/mealplans" element={<MealPlanListPage />} />
       </Routes>
       {showHeader && <Footer />}
     </>

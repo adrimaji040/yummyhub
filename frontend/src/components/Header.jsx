@@ -60,6 +60,7 @@ function Header() {
             <NavLink to="/">Home</NavLink>
             <NavLink to="/about">About</NavLink>
             <NavLink to="/recipes">Recipes</NavLink>
+            <NavLink to="/mealplans">Meal Plan</NavLink>
           </NavLinks>
           <AuthButtons>
             {!token ? (

@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use App\Models\MealPlan;
+use App\Models\Recipe;
 
 class User extends Authenticatable
 {
@@ -43,5 +45,11 @@ class User extends Authenticatable
     public function favorites()
     {
         return $this->belongsToMany(Recipe::class, 'favorites')->withTimestamps();
+    }
+
+    /*Get all meal plans for this */
+    public function mealPlans(): HasMany
+    {
+        return $this->hasMany(MealPlan::class);
     }
 }
