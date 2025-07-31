@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\MealPlanItem;
 use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -32,7 +33,9 @@ class DatabaseSeeder extends Seeder
             RecipeIngredientSeeder::class,
             CommentSeeder::class,
             UserFriendSeeder::class,
-            FavoriteSeeder::class
+            FavoriteSeeder::class,
+            MealPlanSeeder::class,
+            MealPlanItem::class
         ]);
     }
 }

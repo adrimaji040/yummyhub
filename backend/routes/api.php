@@ -11,6 +11,8 @@ use App\Http\Controllers\VoteController;
 use App\Http\Controllers\IngredientController;
 use App\Http\Controllers\RecipeIngredientController;
 use App\Http\Controllers\UnitController;
+use App\Http\Controllers\MealPlanController;
+
 
 Route::middleware(['auth:sanctum'])->get('/user', function (Request $request) {
     return $request->user();
@@ -93,3 +95,25 @@ Route::middleware('auth:sanctum')->group(function () {
 });
 
 Route::get('/votes/average/{recipe_id}', [VoteController::class, 'getAverageRating']);
+
+
+
+
+// Meal Plans
+Route::middleware('auth:sanctum')->group(function () {
+ Route::prefix('mealplans')->group(function () {
+        Route::get('/', [MealPlanController::class, 'index']);
+        Route::post('/', [MealPlanController::class, 'store']);
+        Route::get('/{id}', [MealPlanController::class, 'show']);
+        Route::put('/{id}', [MealPlanController::class, 'update']);
+        Route::delete('/{id}', [MealPlanController::class, 'destroy']);
+        Route::post('/{id}/recipes', [MealPlanController::class, 'addRecipe']);
+        Route::delete('/{id}/items/{itemId}', [MealPlanController::class, 'removeRecipe']);
+    });
+});
+
+
+
+
+
+
