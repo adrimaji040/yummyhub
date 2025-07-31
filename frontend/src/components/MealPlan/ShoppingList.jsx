@@ -1,4 +1,17 @@
 import React, { useState, useEffect } from "react";
+import {
+  Box,
+  Typography,
+  LinearProgress,
+  Button,
+  Checkbox,
+  Divider,
+  Stack,
+  Paper,
+} from "@mui/material";
+import { styled } from "@mui/system";
+import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
+import { red } from "@mui/material/colors";
 
 const ShoppingList = ({ mealPlan }) => {
   const [shoppingList, setShoppingList] = useState([]);
@@ -86,26 +99,64 @@ const ShoppingList = ({ mealPlan }) => {
 
   if (loading) {
     return (
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <h2 className="text-xl font-bold text-gray-800 mb-4">Shopping List</h2>
-        <div className="text-center py-8">
-          <div className="text-gray-500">Generating shopping list...</div>
-        </div>
-      </div>
+      <Paper
+        elevation={1}
+        sx={{
+          borderRadius: 2,
+          border: 1,
+          borderColor: "grey.200",
+          p: 3,
+          bgcolor: "background.paper",
+        }}
+      >
+        <Typography
+          variant="h6"
+          fontWeight="bold"
+          color="text.primary"
+          sx={{ mb: 2 }}
+        >
+          Shopping List
+        </Typography>
+
+        <Box sx={{ textAlign: "center", py: 8 }}>
+          <Typography color="text.secondary">
+            Generating shopping list...
+          </Typography>
+        </Box>
+      </Paper>
     );
   }
 
   if (Object.keys(shoppingList).length === 0) {
     return (
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <h2 className="text-xl font-bold text-gray-800 mb-4">Shopping List</h2>
-        <div className="text-center py-8">
-          <div className="text-gray-500 mb-4">No ingredients found</div>
-          <div className="text-sm text-gray-400">
+      <Paper
+        elevation={1}
+        sx={{
+          borderRadius: 2,
+          border: 1,
+          borderColor: "grey.200",
+          p: 3,
+          bgcolor: "background.paper",
+        }}
+      >
+        <Typography
+          variant="h6"
+          fontWeight="bold"
+          color="text.primary"
+          sx={{ mb: 2 }}
+        >
+          Shopping List
+        </Typography>
+
+        <Box sx={{ textAlign: "center", py: 8 }}>
+          <Typography color="text.secondary" sx={{ mb: 2 }}>
+            No ingredients found
+          </Typography>
+          <Typography variant="body2" color="text.disabled">
             Add recipes to your meal plan to generate a shopping list
-          </div>
-        </div>
-      </div>
+          </Typography>
+        </Box>
+      </Paper>
     );
   }
 
@@ -113,93 +164,164 @@ const ShoppingList = ({ mealPlan }) => {
   const checkedCount = checkedItems.size;
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200">
+    <Box
+      sx={{
+        bgcolor: "background.paper",
+        borderRadius: 2,
+        boxShadow: 1,
+        border: 1,
+        borderColor: "grey.200",
+        overflow: "hidden",
+      }}
+    >
       {/* Header */}
-      <div className="p-6 border-b border-gray-200">
-        <div className="flex justify-between items-center">
-          <h2 className="text-xl font-bold text-gray-800">Shopping List</h2>
-          <div className="text-sm text-gray-600">
+      <Box
+        sx={{
+          p: 3,
+          borderBottom: 1,
+          borderColor: "grey.200",
+        }}
+      >
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            mb: 2,
+          }}
+        >
+          <Typography variant="h6" fontWeight="bold" color="text.primary">
+            Shopping List
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
             {checkedCount} / {totalItems} items
-          </div>
-        </div>
+          </Typography>
+        </Box>
 
         {/* Progress Bar */}
-        <div className="mt-3">
-          <div className="bg-gray-200 rounded-full h-2">
-            <div
-              className="bg-green-500 h-2 rounded-full transition-all duration-300"
-              style={{
-                width: `${
-                  totalItems > 0 ? (checkedCount / totalItems) * 100 : 0
-                }%`,
-              }}
-            />
-          </div>
-        </div>
+        <LinearProgress
+          variant="determinate"
+          value={progress}
+          sx={{
+            height: 8,
+            borderRadius: 4,
+            bgcolor: "grey.200",
+            "& .MuiLinearProgress-bar": {
+              bgcolor: "success.main",
+              transition: "width 0.3s ease",
+            },
+          }}
+        />
 
         {/* Action Buttons */}
-        <div className="mt-4 flex space-x-2">
-          <button
+        <Stack direction="row" spacing={1} mt={3}>
+          <Button
             onClick={clearCheckedItems}
             disabled={checkedCount === 0}
-            className={`px-3 py-1 text-sm rounded ${
-              checkedCount > 0
-                ? "text-gray-600 hover:text-gray-800 border border-gray-300 hover:border-gray-400"
-                : "text-gray-400 border border-gray-200 cursor-not-allowed"
-            }`}
+            variant="outlined"
+            size="small"
+            sx={{
+              color: checkedCount > 0 ? "text.primary" : "text.disabled",
+              borderColor: checkedCount > 0 ? "grey.300" : "grey.200",
+              "&:hover": {
+                borderColor: checkedCount > 0 ? "grey.400" : undefined,
+                color: checkedCount > 0 ? "text.primary" : undefined,
+              },
+              cursor: checkedCount === 0 ? "not-allowed" : "pointer",
+            }}
           >
             Clear Checked
-          </button>
-          <button
+          </Button>
+
+          <Button
             onClick={() => window.print()}
-            className="px-3 py-1 text-sm text-blue-600 hover:text-blue-800 border border-blue-300 hover:border-blue-400 rounded"
+            variant="outlined"
+            size="small"
+            sx={{
+              color: "primary.main",
+              borderColor: "primary.light",
+              "&:hover": {
+                color: "primary.dark",
+                borderColor: "primary.main",
+              },
+            }}
           >
             Print List
-          </button>
-        </div>
-      </div>
+          </Button>
+        </Stack>
+      </Box>
 
       {/* Shopping List Items */}
-      <div className="p-6">
+      <Box sx={{ p: 3 }}>
         {Object.entries(shoppingList).map(([category, ingredients]) => (
-          <div key={category} className="mb-6 last:mb-0">
-            <h3 className="font-semibold text-gray-700 mb-3 text-sm uppercase tracking-wide border-b border-gray-200 pb-1">
+          <Box key={category} sx={{ mb: 4, "&:last-child": { mb: 0 } }}>
+            <Typography
+              variant="subtitle2"
+              fontWeight="600"
+              color="text.secondary"
+              sx={{
+                mb: 1,
+                textTransform: "uppercase",
+                borderBottom: 1,
+                borderColor: "grey.200",
+                pb: 0.5,
+                letterSpacing: 1,
+              }}
+            >
               {category}
-            </h3>
-            <div className="space-y-2">
-              {ingredients.map((ingredient) => (
-                <div
-                  key={ingredient.id}
-                  className={`flex items-center space-x-3 p-2 rounded hover:bg-gray-50 ${
-                    checkedItems.has(ingredient.id)
-                      ? "line-through text-gray-500 bg-gray-50"
-                      : ""
-                  }`}
-                >
-                  <input
-                    type="checkbox"
-                    checked={checkedItems.has(ingredient.id)}
-                    onChange={() => toggleItemChecked(ingredient.id)}
-                    className="h-4 w-4 text-green-600 rounded border-gray-300 focus:ring-green-500"
-                  />
-                  <div className="flex-grow">
-                    <div className="font-medium">
-                      {formatQuantity(ingredient.quantity, ingredient.unit)}{" "}
-                      {ingredient.name}
-                    </div>
-                    {ingredient.recipes && ingredient.recipes.length > 0 && (
-                      <div className="text-xs text-gray-500">
-                        For: {ingredient.recipes.join(", ")}
-                      </div>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+            </Typography>
+
+            <Stack spacing={1}>
+              {ingredients.map((ingredient) => {
+                const isChecked = checkedItems.has(ingredient.id);
+                return (
+                  <Box
+                    key={ingredient.id}
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      p: 1,
+                      borderRadius: 1,
+                      cursor: "pointer",
+                      bgcolor: isChecked ? "grey.100" : "inherit",
+                      textDecoration: isChecked ? "line-through" : "none",
+                      color: isChecked ? "text.disabled" : "text.primary",
+                      "&:hover": {
+                        bgcolor: "grey.50",
+                      },
+                    }}
+                    onClick={() => toggleItemChecked(ingredient.id)}
+                  >
+                    <Checkbox
+                      checked={isChecked}
+                      onChange={() => toggleItemChecked(ingredient.id)}
+                      sx={{
+                        color: "success.main",
+                        "&.Mui-checked": {
+                          color: "success.main",
+                        },
+                        mr: 1,
+                      }}
+                    />
+                    <Box sx={{ flexGrow: 1 }}>
+                      <Typography fontWeight="medium">
+                        {formatQuantity(ingredient.quantity, ingredient.unit)}{" "}
+                        {ingredient.name}
+                      </Typography>
+                      {ingredient.recipes && ingredient.recipes.length > 0 && (
+                        <Typography variant="caption" color="text.secondary">
+                          For: {ingredient.recipes.join(", ")}
+                        </Typography>
+                      )}
+                    </Box>
+                  </Box>
+                );
+              })}
+            </Stack>
+          </Box>
         ))}
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 };
 

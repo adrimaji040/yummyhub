@@ -1,8 +1,19 @@
 // Optional: Add authentication check in MealPlanListPage.jsx
 import React, { useContext } from "react";
 import { Navigate } from "react-router-dom";
-import { UserContext } from ".../src/store/UserProvider"; // Adjust import path ----????
+import { UserProvider } from "../store/UserProvider";
+import { UserContext } from "../store/UserContext";
 import MealPlanList from "../components/MealPlan/MealPlanList";
+import {
+  Box,
+  Typography,
+  Button,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+} from "@mui/material";
+import { styled } from "@mui/system";
 
 const MealPlanListPage = () => {
   const { user } = useContext(UserContext); // Adjust if you use different context structure
@@ -12,9 +23,9 @@ const MealPlanListPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <Box sx={{ minHeight: "100vh", backgroundColor: "grey.100" }}>
       <MealPlanList />
-    </div>
+    </Box>
   );
 };
 

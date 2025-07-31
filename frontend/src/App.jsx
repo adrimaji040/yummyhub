@@ -14,13 +14,12 @@ import Register from "./pages/Register";
 import AddRecipe from "./pages/AddRecipe";
 import Recipe from "./pages/Recipe";
 import Recipes from "./pages/Recipes";
-import MealPlanListPage from "./pages/MealPlanListPage";
+import MealPlanListPage from "./pages/MealPlanListPage.jsx";
 import Favorites from "./pages/Favorites";
 
 import { ThemeProvider } from "@mui/material/styles";
 import theme from "./theme";
 import { UserProvider } from "./store/UserProvider";
-import Recipes from "./pages/Recipes";
 
 function AppContent() {
   const location = useLocation();

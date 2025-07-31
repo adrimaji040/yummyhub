@@ -1,5 +1,17 @@
 import React, { useState, useEffect } from "react";
 import MealPlanWeek from "./MealPlanWeek";
+import {
+  Box,
+  Typography,
+  Button,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+} from "@mui/material";
+import { styled } from "@mui/system";
+import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
+import { red } from "@mui/material/colors";
 
 const MealPlanList = () => {
   const [mealPlans, setMealPlans] = useState([]);
@@ -9,9 +21,9 @@ const MealPlanList = () => {
 
   // Get auth token (adjust this based on how you store your token)
   const getAuthToken = () => {
-    return (
-      localStorage.getItem("auth_token") || sessionStorage.getItem("auth_token")
-    );
+    const token =
+      localStorage.getItem("token") || sessionStorage.getItem("token");
+    return token;
   };
 
   // API call to fetch meal plans
@@ -19,25 +31,62 @@ const MealPlanList = () => {
     try {
       setLoading(true);
       const token = getAuthToken();
+      console.log(
+        "MealPlanList - Fetching meal plans with token:",
+        token ? "Yes" : "No"
+      );
 
-      const response = await fetch("/api/mealplans", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
-      });
+      // Try fetching with items included
+      const response = await fetch(
+        "http://localhost:8000/api/mealplans?include_items=true",
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+        }
+      );
 
       if (!response.ok) {
         throw new Error("Failed to fetch meal plans");
       }
 
       const data = await response.json();
-      setMealPlans(data);
+      console.log("MealPlanList - Fetched meal plans:", data);
 
-      // Select the first meal plan by default
-      if (data.length > 0) {
-        setSelectedMealPlan(data[0]);
+      // fetch each meal plan individually
+      if (data.length > 0 && !data[0].items) {
+        console.log(
+          "MealPlanList - Items not included, fetching individual meal plans"
+        );
+        const mealPlansWithItems = await Promise.all(
+          data.map(async (plan) => {
+            const detailResponse = await fetch(
+              `http://localhost:8000/api/mealplans/${plan.id}`,
+              {
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                  "Content-Type": "application/json",
+                  Accept: "application/json",
+                },
+              }
+            );
+            if (detailResponse.ok) {
+              return await detailResponse.json();
+            }
+            return plan; // fallback to plan without items
+          })
+        );
+        setMealPlans(mealPlansWithItems);
+        if (mealPlansWithItems.length > 0) {
+          setSelectedMealPlan(mealPlansWithItems[0]);
+        }
+      } else {
+        setMealPlans(data);
+        if (data.length > 0) {
+          setSelectedMealPlan(data[0]);
+        }
       }
     } catch (err) {
       setError(err.message);
@@ -46,6 +95,13 @@ const MealPlanList = () => {
       setLoading(false);
     }
   };
+  //end new fetch
+
+  // ONLY ONE useEffect
+  useEffect(() => {
+    console.log("MealPlanList - Component mounted, fetching meal plans");
+    fetchMealPlans();
+  }, []);
 
   // Create new meal plan
   const createMealPlan = async () => {
@@ -56,7 +112,7 @@ const MealPlanList = () => {
         currentDate.setDate(currentDate.getDate() - currentDate.getDay())
       );
 
-      const response = await fetch("/api/mealplans", {
+      const response = await fetch("http://localhost:8000/api/mealplans", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -84,6 +140,7 @@ const MealPlanList = () => {
 
   // Update meal plan (callback from child components)
   const handleMealPlanUpdate = (updatedMealPlan) => {
+    console.log("MealPlanList - Updating meal plan:", updatedMealPlan);
     setMealPlans(
       mealPlans.map((plan) =>
         plan.id === updatedMealPlan.id ? updatedMealPlan : plan
@@ -92,84 +149,115 @@ const MealPlanList = () => {
     setSelectedMealPlan(updatedMealPlan);
   };
 
+  // Add useEffect to monitor selectedMealPlan changes
   useEffect(() => {
-    fetchMealPlans();
-  }, []);
+    console.log("MealPlanList - Selected meal plan changed:", selectedMealPlan);
+  }, [selectedMealPlan]);
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="text-lg">Loading meal plans...</div>
-      </div>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          minHeight: "100vh",
+        }}
+      >
+        <Typography variant="h6">Loading meal plans...</Typography>
+      </Box>
     );
   }
 
   if (error) {
     return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="text-red-500">Error: {error}</div>
-      </div>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          minHeight: "100vh",
+        }}
+      >
+        <Typography variant="h6" color="error">
+          Error: {error}
+        </Typography>
+      </Box>
     );
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mb-8">
-        <div className="flex justify-between items-center mb-4">
-          <h1 className="text-3xl font-bold text-gray-800">Meal Plans</h1>
-          <button
-            onClick={createMealPlan}
-            className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-medium"
-          >
+    <Box sx={{ maxWidth: "1200px", mx: "auto", px: 4, py: 8 }}>
+      <Box sx={{ mb: 8 }}>
+        {/* Header Section */}
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            mb: 4,
+          }}
+        >
+          <Typography variant="h4" fontWeight="bold" color="text.primary">
+            Meal Plans
+          </Typography>
+          <Button variant="contained" color="primary" onClick={createMealPlan}>
             Create New Meal Plan
-          </button>
-        </div>
+          </Button>
+        </Box>
 
         {/* Meal Plan Selector */}
         {mealPlans.length > 0 && (
-          <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+          <Box sx={{ mb: 6, maxWidth: "400px" }}>
+            <InputLabel id="meal-plan-label" sx={{ mb: 1 }}>
               Select Meal Plan:
-            </label>
-            <select
-              value={selectedMealPlan?.id || ""}
-              onChange={(e) => {
-                const selected = mealPlans.find(
-                  (plan) => plan.id === parseInt(e.target.value)
-                );
-                setSelectedMealPlan(selected);
-              }}
-              className="block w-full max-w-md px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            >
-              {mealPlans.map((plan) => (
-                <option key={plan.id} value={plan.id}>
-                  {plan.name} -{" "}
-                  {new Date(plan.week_start_date).toLocaleDateString()}
-                </option>
-              ))}
-            </select>
-          </div>
+            </InputLabel>
+            <FormControl fullWidth>
+              <Select
+                labelId="meal-plan-label"
+                value={selectedMealPlan?.id || ""}
+                onChange={(e) => {
+                  const selected = mealPlans.find(
+                    (plan) => plan.id === parseInt(e.target.value)
+                  );
+                  setSelectedMealPlan(selected);
+                }}
+              >
+                {mealPlans.map((plan) => (
+                  <MenuItem key={plan.id} value={plan.id}>
+                    {plan.name} –{" "}
+                    {new Date(plan.week_start_date).toLocaleDateString()}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Box>
         )}
-      </div>
+      </Box>
 
       {/* Display Selected Meal Plan */}
       {selectedMealPlan ? (
         <MealPlanWeek
+          key={selectedMealPlan.id} // Add key to force re-render when meal plan changes
           mealPlan={selectedMealPlan}
           onUpdateMealPlan={handleMealPlanUpdate}
         />
       ) : (
-        <div className="text-center py-12">
-          <div className="text-gray-500 text-lg mb-4">No meal plans found</div>
-          <button
+        <Box sx={{ textAlign: "center", py: 12 }}>
+          <Typography variant="h6" color="text.secondary" mb={2}>
+            No meal plans found
+          </Typography>
+          <Button
+            variant="contained"
+            color="primary"
+            size="large"
             onClick={createMealPlan}
-            className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg font-medium"
           >
             Create Your First Meal Plan
-          </button>
-        </div>
+          </Button>
+        </Box>
       )}
-    </div>
+    </Box>
   );
 };
 

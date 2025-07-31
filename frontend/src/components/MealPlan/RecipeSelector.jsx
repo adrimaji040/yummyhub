@@ -1,4 +1,17 @@
 import React, { useState, useEffect } from "react";
+import {
+  Box,
+  TextField,
+  Typography,
+  Radio,
+  FormControlLabel,
+  Button,
+  Divider,
+  Paper,
+} from "@mui/material";
+import { styled } from "@mui/system";
+import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
+import { red } from "@mui/material/colors";
 
 const RecipeSelector = ({ onSelectRecipe, onCancel }) => {
   const [recipes, setRecipes] = useState([]);
@@ -11,9 +24,7 @@ const RecipeSelector = ({ onSelectRecipe, onCancel }) => {
 
   // Get auth token
   const getAuthToken = () => {
-    return (
-      localStorage.getItem("auth_token") || sessionStorage.getItem("auth_token")
-    );
+    return localStorage.getItem("token") || sessionStorage.getItem("token");
   };
 
   // Fetch all user recipes
@@ -22,7 +33,7 @@ const RecipeSelector = ({ onSelectRecipe, onCancel }) => {
       setLoading(true);
       const token = getAuthToken();
 
-      const response = await fetch("/api/recipes", {
+      const response = await fetch("http://localhost:8000/api/recipes", {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
@@ -73,133 +84,161 @@ const RecipeSelector = ({ onSelectRecipe, onCancel }) => {
 
   if (loading) {
     return (
-      <div className="text-center py-8">
-        <div className="text-gray-500">Loading recipes...</div>
-      </div>
+      <Box sx={{ textAlign: "center", py: 8 }}>
+        <Typography color="text.secondary">Loading recipes...</Typography>
+      </Box>
     );
   }
 
   if (error) {
     return (
-      <div className="text-center py-8">
-        <div className="text-red-500 mb-4">Error: {error}</div>
-        <button
+      <Box sx={{ textAlign: "center", py: 8 }}>
+        <Typography color="error" sx={{ mb: 2 }}>
+          Error: {error}
+        </Typography>
+        <Button
+          variant="text"
           onClick={fetchRecipes}
-          className="text-blue-600 hover:text-blue-800"
+          sx={{ color: "primary.main", "&:hover": { color: "primary.dark" } }}
         >
           Try Again
-        </button>
-      </div>
+        </Button>
+      </Box>
     );
   }
 
   if (recipes.length === 0) {
     return (
-      <div className="text-center py-8">
-        <div className="text-gray-500 mb-4">No recipes found</div>
-        <div className="text-sm text-gray-400">
+      <Box sx={{ textAlign: "center", py: 8 }}>
+        <Typography color="text.secondary" sx={{ mb: 2 }}>
+          No recipes found
+        </Typography>
+        <Typography variant="body2" color="text.disabled">
           Create some recipes first to add them to your meal plan
-        </div>
-        <div className="mt-4">
-          <button
+        </Typography>
+        <Box sx={{ mt: 4 }}>
+          <Button
             onClick={onCancel}
-            className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded"
+            variant="contained"
+            sx={{
+              bgcolor: "grey.500",
+              "&:hover": {
+                bgcolor: "grey.600",
+              },
+              color: "common.white",
+              px: 3,
+              py: 1,
+              borderRadius: 1,
+            }}
           >
             Close
-          </button>
-        </div>
-      </div>
+          </Button>
+        </Box>
+      </Box>
     );
   }
 
   return (
-    <div className="space-y-4">
+    <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
       {/* Search Input */}
-      <div>
-        <input
-          type="text"
-          placeholder="Search recipes..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-        />
-      </div>
+      <TextField
+        fullWidth
+        variant="outlined"
+        placeholder="Search recipes..."
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+      />
 
       {/* Recipe List */}
-      <div className="max-h-60 overflow-y-auto border border-gray-200 rounded-md">
+      <Paper
+        variant="outlined"
+        sx={{
+          maxHeight: 240,
+          overflowY: "auto",
+          borderRadius: 2,
+        }}
+      >
         {filteredRecipes.length === 0 ? (
-          <div className="p-4 text-center text-gray-500">
+          <Box sx={{ p: 2, textAlign: "center", color: "text.secondary" }}>
             No recipes match your search
-          </div>
+          </Box>
         ) : (
           filteredRecipes.map((recipe) => (
-            <div
+            <Box
               key={recipe.id}
-              className={`p-3 border-b border-gray-100 cursor-pointer hover:bg-gray-50 ${
-                selectedRecipeId === recipe.id
-                  ? "bg-blue-50 border-blue-200"
-                  : ""
-              }`}
               onClick={() => setSelectedRecipeId(recipe.id)}
+              sx={{
+                px: 2,
+                py: 1.5,
+                borderBottom: "1px solid",
+                borderColor: "grey.100",
+                cursor: "pointer",
+                backgroundColor:
+                  selectedRecipeId === recipe.id ? "blue.50" : "transparent",
+                "&:hover": {
+                  backgroundColor: "grey.50",
+                },
+              }}
             >
-              <div className="flex items-center space-x-3">
-                <input
-                  type="radio"
-                  name="recipe"
+              <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                <Radio
                   value={recipe.id}
                   checked={selectedRecipeId === recipe.id}
                   onChange={() => setSelectedRecipeId(recipe.id)}
-                  className="text-blue-600"
+                  color="primary"
                 />
-                <div className="flex-grow">
-                  <div className="font-medium text-gray-800">{recipe.name}</div>
+                <Box sx={{ flexGrow: 1 }}>
+                  <Typography fontWeight="medium" color="text.primary">
+                    {recipe.name}
+                  </Typography>
                   {recipe.description && (
-                    <div className="text-sm text-gray-600 truncate">
+                    <Typography variant="body2" color="text.secondary" noWrap>
                       {recipe.description}
-                    </div>
+                    </Typography>
                   )}
-                </div>
-              </div>
-            </div>
+                </Box>
+              </Box>
+            </Box>
           ))
         )}
-      </div>
+      </Paper>
 
       {/* Notes Input */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+      <Box>
+        <Typography
+          variant="body2"
+          fontWeight="medium"
+          color="text.secondary"
+          mb={0.5}
+        >
           Notes (optional)
-        </label>
-        <textarea
+        </Typography>
+        <TextField
+          multiline
+          minRows={2}
+          placeholder="Add any notes for this meal..."
+          fullWidth
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
-          placeholder="Add any notes for this meal..."
-          rows={2}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
         />
-      </div>
+      </Box>
 
       {/* Action Buttons */}
-      <div className="flex justify-end space-x-3 pt-4 border-t">
-        <button
-          onClick={onCancel}
-          className="px-4 py-2 text-gray-600 hover:text-gray-800"
-        >
+      <Divider sx={{ mt: 2 }} />
+      <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 2, pt: 2 }}>
+        <Button onClick={onCancel} color="inherit">
           Cancel
-        </button>
-        <button
+        </Button>
+        <Button
           onClick={handleSelectRecipe}
           disabled={!selectedRecipeId}
-          className={`px-4 py-2 rounded font-medium ${
-            selectedRecipeId
-              ? "bg-blue-600 hover:bg-blue-700 text-white"
-              : "bg-gray-300 text-gray-500 cursor-not-allowed"
-          }`}
+          variant="contained"
+          color="primary"
         >
           Add Recipe
-        </button>
-      </div>
-    </div>
+        </Button>
+      </Box>
+    </Box>
   );
 };
 

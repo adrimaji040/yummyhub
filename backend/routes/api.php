@@ -98,8 +98,6 @@ Route::get('/votes/average/{recipe_id}', [VoteController::class, 'getAverageRati
 
 
 
-//TODO - Create Route to RecipeIngredientsController ????
-
 
 // Meal Plans
 Route::middleware('auth:sanctum')->group(function () {

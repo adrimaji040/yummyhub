@@ -1,6 +1,19 @@
 import React, { useState, useEffect } from "react";
 import MealPlanDay from "./MealPlanDay";
 import ShoppingList from "./ShoppingList";
+import {
+  Box,
+  Typography,
+  Button,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Grid,
+} from "@mui/material";
+import { styled } from "@mui/system";
+import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
+import { red } from "@mui/material/colors";
 
 const MealPlanWeek = ({ mealPlan, onUpdateMealPlan }) => {
   const [weekDays, setWeekDays] = useState([]);
@@ -40,72 +53,111 @@ const MealPlanWeek = ({ mealPlan, onUpdateMealPlan }) => {
   };
 
   return (
-    <div className="space-y-6">
+    <Box sx={{ display: "flex", flexDirection: "column", gap: 6 }}>
       {/* Week Header */}
-      <div className="text-center">
-        <h2 className="text-2xl font-bold text-gray-800 mb-2">
+      <Box sx={{ textAlign: "center" }}>
+        <Typography variant="h5" fontWeight="bold" color="text.primary" mb={1}>
           {mealPlan.name}
-        </h2>
-        <div className="text-gray-600">{getWeekRange()}</div>
-      </div>
+        </Typography>
+        <Typography color="text.secondary">{getWeekRange()}</Typography>
+      </Box>
 
       {/* Week Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-7 gap-4">
+      <Grid container spacing={2} columns={{ xs: 1, sm: 2, md: 3, lg: 7 }}>
         {weekDays.map((day) => (
-          <MealPlanDay
-            key={`day-${day.dayOfWeek}-${mealPlan.id}`}
-            day={day}
-            mealPlanId={mealPlan.id}
-            items={
-              mealPlan.items?.filter(
-                (item) => item.day_of_week === day.dayOfWeek
-              ) || []
-            }
-            onUpdateMealPlan={onUpdateMealPlan}
-          />
+          <Grid item xs={1} key={`day-${day.dayOfWeek}-${mealPlan.id}`}>
+            <MealPlanDay
+              day={day}
+              mealPlanId={mealPlan.id}
+              items={
+                mealPlan.items?.filter(
+                  (item) => item.day_of_week === day.dayOfWeek
+                ) || []
+              }
+              onUpdateMealPlan={onUpdateMealPlan}
+            />
+          </Grid>
         ))}
-      </div>
+      </Grid>
 
       {/* Summary Stats */}
-      <div className="bg-gray-50 rounded-lg p-4">
-        <h3 className="font-semibold text-gray-800 mb-2">Week Summary</h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-          <div>
-            <div className="font-medium text-gray-600">Total Meals</div>
-            <div className="text-lg font-semibold text-blue-600">
+      <Box
+        sx={{
+          backgroundColor: "grey.50",
+          borderRadius: 2,
+          p: 4,
+        }}
+      >
+        <Typography
+          variant="h6"
+          fontWeight="medium"
+          color="text.primary"
+          mb={2}
+        >
+          Week Summary
+        </Typography>
+
+        <Grid
+          container
+          spacing={2}
+          columns={{ xs: 2, md: 4 }}
+          sx={{ fontSize: "0.875rem" }}
+        >
+          <Grid item xs={1}>
+            <Typography fontWeight={500} color="text.secondary">
+              Total Meals
+            </Typography>
+            <Typography fontWeight="bold" color="primary.main" variant="h6">
               {mealPlan.items?.length || 0} / 21
-            </div>
-          </div>
-          <div>
-            <div className="font-medium text-gray-600">Breakfasts</div>
-            <div className="text-lg font-semibold text-yellow-600">
+            </Typography>
+          </Grid>
+
+          <Grid item xs={1}>
+            <Typography fontWeight={500} color="text.secondary">
+              Breakfasts
+            </Typography>
+            <Typography
+              fontWeight="bold"
+              sx={{ color: "#f59e0b" }}
+              variant="h6"
+            >
               {mealPlan.items?.filter((item) => item.meal_type === "breakfast")
                 .length || 0}{" "}
               / 7
-            </div>
-          </div>
-          <div>
-            <div className="font-medium text-gray-600">Lunches</div>
-            <div className="text-lg font-semibold text-green-600">
+            </Typography>
+          </Grid>
+
+          <Grid item xs={1}>
+            <Typography fontWeight={500} color="text.secondary">
+              Lunches
+            </Typography>
+            <Typography
+              fontWeight="bold"
+              sx={{ color: "#10b981" }}
+              variant="h6"
+            >
               {mealPlan.items?.filter((item) => item.meal_type === "lunch")
                 .length || 0}{" "}
               / 7
-            </div>
-          </div>
-          <div>
-            <div className="font-medium text-gray-600">Dinners</div>
-            <div className="text-lg font-semibold text-blue-600">
+            </Typography>
+          </Grid>
+
+          <Grid item xs={1}>
+            <Typography fontWeight={500} color="text.secondary">
+              Dinners
+            </Typography>
+            <Typography fontWeight="bold" color="primary.main" variant="h6">
               {mealPlan.items?.filter((item) => item.meal_type === "dinner")
                 .length || 0}{" "}
               / 7
-            </div>
-          </div>
-        </div>
-      </div>
+            </Typography>
+          </Grid>
+        </Grid>
+      </Box>
 
       {/* Shopping List */}
       <ShoppingList mealPlan={mealPlan} />
-    </div>
+    </Box>
   );
 };
 

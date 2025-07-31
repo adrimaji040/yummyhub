@@ -1,36 +1,58 @@
-import React, { useState } from 'react';
-import RecipeSelector from './RecipeSelector';
+import React, { useState, useEffect } from "react";
+import RecipeSelector from "./RecipeSelector";
+import {
+  Box,
+  Typography,
+  Button,
+  Stack,
+  IconButton,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  CircularProgress,
+} from "@mui/material";
+import { styled } from "@mui/system";
+import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
+import { red } from "@mui/material/colors";
 
-const MealSlot = ({ 
-  mealPlanId, 
-  dayOfWeek, 
-  mealType, 
-  existingItem, 
-  onAddRecipe, 
-  onRemoveRecipe 
+const MealSlot = ({
+  mealPlanId,
+  dayOfWeek,
+  mealType,
+  existingItem,
+  onAddRecipe,
+  onRemoveRecipe,
 }) => {
   const [showRecipeSelector, setShowRecipeSelector] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [currentItem, setCurrentItem] = useState(existingItem); //Add state for the current item
 
-  const handleAddRecipe = async (recipeId, notes = '') => {
+  //Add useEffect to update currenItem when existingItem prop changes
+  useEffect(() => {
+    console.log(`MealSlot ${mealType} - existingItem updated:`, existingItem);
+    setCurrentItem(existingItem);
+  }, [existingItem, mealType]);
+
+  const handleAddRecipe = async (recipeId, notes = "") => {
     setLoading(true);
     try {
       await onAddRecipe(dayOfWeek, mealType, recipeId, notes);
       setShowRecipeSelector(false);
     } catch (error) {
-      console.error('Error adding recipe:', error);
+      console.error("Error adding recipe:", error);
     } finally {
       setLoading(false);
     }
   };
 
   const handleRemoveRecipe = async () => {
-    if (existingItem) {
+    if (currentItem) {
       setLoading(true);
       try {
-        await onRemoveRecipe(existingItem.id);
+        await onRemoveRecipe(currentItem.id);
       } catch (error) {
-        console.error('Error removing recipe:', error);
+        console.error("Error removing recipe:", error);
       } finally {
         setLoading(false);
       }
@@ -39,14 +61,30 @@ const MealSlot = ({
 
   const getMealTypeColor = (mealType) => {
     switch (mealType) {
-      case 'breakfast':
-        return 'border-l-yellow-400 bg-yellow-50';
-      case 'lunch':
-        return 'border-l-green-400 bg-green-50';
-      case 'dinner':
-        return 'border-l-blue-400 bg-blue-50';
+      case "breakfast":
+        return {
+          borderLeft: "4px solid",
+          borderColor: "warning.main", // yellow
+          bgcolor: "warning.light", // yellow background
+        };
+      case "lunch":
+        return {
+          borderLeft: "4px solid",
+          borderColor: "success.main", // green
+          bgcolor: "success.light",
+        };
+      case "dinner":
+        return {
+          borderLeft: "4px solid",
+          borderColor: "primary.main", // blue
+          bgcolor: "primary.light",
+        };
       default:
-        return 'border-l-gray-400 bg-gray-50';
+        return {
+          borderLeft: "4px solid",
+          borderColor: "grey.400",
+          bgcolor: "grey.50",
+        };
     }
   };
 
@@ -56,90 +94,151 @@ const MealSlot = ({
 
   if (loading) {
     return (
-      <div className={`p-4 border-l-4 rounded-lg ${getMealTypeColor(mealType)} min-h-[120px] flex items-center justify-center`}>
-        <div className="text-gray-500">Loading...</div>
-      </div>
+      <Box
+        sx={{
+          p: 2,
+          borderRadius: 2,
+          minHeight: 120,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          ...getMealTypeColor(mealType),
+        }}
+      >
+        <CircularProgress color="inherit" />
+      </Box>
     );
   }
 
   return (
-    <div className={`p-4 border-l-4 rounded-lg ${getMealTypeColor(mealType)} min-h-[120px] relative`}>
-      <div className="flex justify-between items-start mb-2">
-        <h4 className="font-semibold text-gray-700 text-sm uppercase tracking-wide">
+    <Box
+      sx={{
+        p: 2,
+        borderLeft: "4px solid",
+        borderColor: getMealTypeColor(mealType),
+        borderRadius: 2,
+        minHeight: "120px",
+        position: "relative",
+      }}
+    >
+      {/* Header */}
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "flex-start",
+          mb: 2,
+        }}
+      >
+        <Typography
+          variant="subtitle2"
+          fontWeight="bold"
+          color="text.secondary"
+          sx={{ textTransform: "uppercase", letterSpacing: 1 }}
+        >
           {formatMealType(mealType)}
-        </h4>
-        
-        {existingItem && (
-          <button
+        </Typography>
+
+        {currentItem && (
+          <IconButton
             onClick={handleRemoveRecipe}
-            className="text-red-500 hover:text-red-700 text-sm"
+            size="small"
+            sx={{ color: "error.main" }}
             title="Remove recipe"
           >
             ✕
-          </button>
+          </IconButton>
         )}
-      </div>
+      </Box>
 
-      {existingItem && existingItem.recipe ? (
-        // Display existing recipe
-        <div className="space-y-2">
-          <div className="font-medium text-gray-800">
-            {existingItem.recipe.name}
-          </div>
-          {existingItem.recipe.description && (
-            <div className="text-sm text-gray-600">
-              {existingItem.recipe.description}
-            </div>
+      {/* Content */}
+      {currentItem && currentItem.recipe ? (
+        <Stack spacing={1}>
+          <Typography fontWeight="medium" color="text.primary">
+            {currentItem.recipe.name}
+          </Typography>
+          {currentItem.recipe.description && (
+            <Typography variant="body2" color="text.secondary">
+              {currentItem.recipe.description}
+            </Typography>
           )}
-          {existingItem.notes && (
-            <div className="text-sm text-gray-500 italic">
-              Note: {existingItem.notes}
-            </div>
+          {currentItem.notes && (
+            <Typography
+              variant="body2"
+              color="text.disabled"
+              fontStyle="italic"
+            >
+              Note: {currentItem.notes}
+            </Typography>
           )}
-          <button
+          <Button
             onClick={() => setShowRecipeSelector(true)}
-            className="text-sm text-blue-600 hover:text-blue-800"
+            variant="text"
+            size="small"
+            sx={{
+              color: "primary.main",
+              textTransform: "none",
+              alignSelf: "start",
+            }}
           >
             Change Recipe
-          </button>
-        </div>
+          </Button>
+        </Stack>
       ) : (
-        // Empty slot - show add button
-        <div className="flex flex-col items-center justify-center h-full text-gray-400">
-          <div className="text-2xl mb-2">+</div>
-          <button
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            height: "100%",
+            color: "text.disabled",
+            textAlign: "center",
+          }}
+        >
+          <Typography variant="h4" mb={1}>
+            +
+          </Typography>
+          <Button
             onClick={() => setShowRecipeSelector(true)}
-            className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+            size="small"
+            sx={{
+              color: "primary.main",
+              fontWeight: "medium",
+              textTransform: "none",
+            }}
           >
             Add Recipe
-          </button>
-        </div>
+          </Button>
+        </Box>
       )}
 
-      {/* Recipe Selector Modal/Dropdown */}
+      {/* Recipe Selector Dialog */}
       {showRecipeSelector && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 max-h-[80vh] overflow-y-auto">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold">
-                Select Recipe for {formatMealType(mealType)}
-              </h3>
-              <button
-                onClick={() => setShowRecipeSelector(false)}
-                className="text-gray-500 hover:text-gray-700 text-xl"
-              >
-                ✕
-              </button>
-            </div>
-            
+        <Dialog
+          open={showRecipeSelector}
+          onClose={() => setShowRecipeSelector(false)}
+          fullWidth
+          maxWidth="sm"
+        >
+          <DialogTitle>
+            Select Recipe for {formatMealType(mealType)}
+            <IconButton
+              onClick={() => setShowRecipeSelector(false)}
+              sx={{ position: "absolute", right: 8, top: 8, color: "grey.500" }}
+            >
+              ✕
+            </IconButton>
+          </DialogTitle>
+          <DialogContent dividers sx={{ maxHeight: "70vh" }}>
             <RecipeSelector
               onSelectRecipe={handleAddRecipe}
               onCancel={() => setShowRecipeSelector(false)}
             />
-          </div>
-        </div>
+          </DialogContent>
+        </Dialog>
       )}
-    </div>
+    </Box>
   );
 };
 
