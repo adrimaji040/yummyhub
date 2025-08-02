@@ -10,12 +10,13 @@ import Header from "./components/Header";
 import Footer from "./components/Footer";
 import Login from "./pages/Login";
 import Profile from "./pages/Profile";
-import Register from "./pages/Register";
-import AddRecipe from "./pages/AddRecipe";
+import Register from "./pages/Register.jsx";
+import AddRecipe from "./pages/AddRecipe.jsx";
 import Recipe from "./pages/Recipe";
 import Recipes from "./pages/Recipes";
 import MealPlanListPage from "./pages/MealPlanListPage.jsx";
 import Favorites from "./pages/Favorites";
+import ShoppingList from "./pages/ShoppingList.jsx";
 
 import { ThemeProvider } from "@mui/material/styles";
 import theme from "./theme";
@@ -39,6 +40,7 @@ function AppContent() {
         <Route path="/recipes" element={<Recipes />} />
         <Route path="/mealplans" element={<MealPlanListPage />} />
         <Route path="/favorites" element={<Favorites />} />
+        <Route path="/shoppinglist" element={<ShoppingList />} />
       </Routes>
       {showHeader && <Footer />}
     </>
