@@ -32,6 +32,21 @@ const RecipesCards = () => {
   const [recipes, setRecipes] = useState([]);
   const navigate = useNavigate();
 
+  // Adriana - Helper function to get the full image URL
+  const getImageUrl = (relativePath) => {
+    if (!relativePath) {
+      return "/images/placeholder-recipe.jpg"; // Fallback image
+    }
+
+    // If it's already a full URL, return as is
+    if (relativePath.startsWith("http")) {
+      return relativePath;
+    }
+
+    // Convert relative path to full URL
+    return `${backendUrl}/storage/${relativePath}`;
+  };
+
   useEffect(() => {
     fetch(apiUrl)
       .then((response) => response.json())
@@ -45,6 +60,12 @@ const RecipesCards = () => {
 
   const handleCardClick = (id) => {
     navigate(`/recipe/${id}`);
+  };
+
+  //Adriana - to show fallback images if loading fails
+  const handleImageError = (e) => {
+    console.error("Image failed to load:", e.target.src);
+    e.target.src = "/images/placeholder-recipe.jpg"; // Fallback on error
   };
 
   return (
@@ -101,12 +122,22 @@ const RecipesCards = () => {
                 justifyContent: "space-between",
               }}
             >
+              {console.log(
+                "Image URL for",
+                recipe.title,
+                ":",
+                recipe.cover_photo_url
+              )}
               <CardMedia
                 component="img"
                 height="160"
                 image={recipe.cover_photo_url}
                 alt={recipe.title}
                 sx={{ objectFit: "cover" }}
+                onError={handleImageError}
+                onLoad={() =>
+                  console.log("Image loaded successfully:", recipe.title)
+                }
               />
               <CardContent
                 sx={{

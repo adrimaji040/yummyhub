@@ -23,6 +23,27 @@ class Recipe extends Model
         'category_id',
     ];
 
+
+     /**
+     * Adriana - Get the full URL for the cover photo.
+     * This accessor will automatically convert relative paths to full URLs.
+     */
+    public function getCoverPhotoUrlAttribute($value)
+    {
+        if (!$value) {
+            return null;
+        }
+        
+        // If it's already a full URL, return as is
+        if (str_starts_with($value, 'http')) {
+            return $value;
+        }
+        
+        // Convert relative path to full URL
+        return asset('storage/' . $value);
+    }
+
+
     /**
      * Get the user that owns the recipe.
      */ 

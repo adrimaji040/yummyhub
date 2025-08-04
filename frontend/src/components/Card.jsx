@@ -45,7 +45,7 @@ const Card = ({ recipe }) => {
           <CardMedia
             component="img"
             height="140"
-            image={`../${cover_photo_url}`}
+            image={cover_photo_url}
             alt={title}
           />
         </Link>
