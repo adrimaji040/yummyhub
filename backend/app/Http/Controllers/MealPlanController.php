@@ -46,6 +46,19 @@ class MealPlanController extends Controller
             'name' => 'string|max:255'
         ]);
 
+       /* //Check if a meal plan exist for this user and week
+        $existingMealPlan = MealPlan::where('user_id',$user->id) 
+                            -> where('week_start_date',$request->week_start_date)
+                            ->first();
+
+        if($existingMealPlan){
+            return response()->json([
+                'message' => 'A meal plan already exist for this week.',
+                'existing_meal_plan' => $existingMealPlan->load(['items.recipe'])
+            ], 409 ); //409 Conflict status code
+        }*/
+
+        //Create the meal plan if it doesn't exist
         if ($user instanceof User){
               $mealPlan = $user->mealPlans()->create([
             'week_start_date' => $request->week_start_date,
