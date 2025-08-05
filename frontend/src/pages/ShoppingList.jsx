@@ -39,19 +39,41 @@ function ShoppingList() {
               border: "none",
               padding: "10px",
               borderRadius: "5px",
-              //width: "150px",
+              width: "150px",
             }}
           >
             Add
           </button>
         </div>
-        <ul>
-          {items.map((item, index) => (
-            <li key={index}>
-              {item} <button onClick={() => removeItem(index)}>Remove</button>
-            </li>
-          ))}
-        </ul>
+        <table style={{ margin: "20px auto", borderCollapse: "collapse", width: "80%" }}>
+          <thead>
+            <tr>
+              <th style={{ border: "1px solid black", padding: "10px" }}>Item</th>
+              <th style={{ border: "1px solid black", padding: "10px" }}>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {items.map((item, index) => (
+              <tr key={index}>
+                <td style={{ border: "1px solid black", padding: "10px" }}>{item}</td>
+                <td style={{ border: "1px solid black", padding: "10px" }}>
+                  <button
+                    onClick={() => removeItem(index)}
+                    style={{
+                      backgroundColor: "red",
+                      color: "white",
+                      border: "none",
+                      padding: "5px 10px",
+                      borderRadius: "5px",
+                    }}
+                  >
+                    Remove
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </>
   );
