@@ -16,6 +16,7 @@ import Recipe from "./pages/Recipe";
 import Recipes from "./pages/Recipes";
 import MealPlanListPage from "./pages/MealPlanListPage.jsx";
 import Favorites from "./pages/Favorites";
+import About from "./pages/About.jsx";
 
 import { ThemeProvider } from "@mui/material/styles";
 import theme from "./theme";
@@ -31,6 +32,7 @@ function AppContent() {
       {showHeader && <Header />}
       <Routes>
         <Route path="/" element={<Home />} />
+        <Route path="/About" element={<About />} />
         <Route path="/login" element={<Login />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/register" element={<Register />} />{" "}

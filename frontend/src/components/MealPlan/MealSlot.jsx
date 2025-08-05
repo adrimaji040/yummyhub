@@ -11,6 +11,7 @@ import {
   DialogContent,
   DialogActions,
   CircularProgress,
+  CardMedia,
 } from "@mui/material";
 import { styled } from "@mui/system";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
@@ -92,6 +93,11 @@ const MealSlot = ({
     return mealType.charAt(0).toUpperCase() + mealType.slice(1);
   };
 
+  const handleImageError = (e) => {
+    console.error("Recipe image failed to load:", e.target.src);
+    e.target.style.display = "none"; // Hide broken image
+  };
+
   if (loading) {
     return (
       <Box
@@ -153,37 +159,75 @@ const MealSlot = ({
 
       {/* Content */}
       {currentItem && currentItem.recipe ? (
-        <Stack spacing={1}>
-          <Typography fontWeight="medium" color="text.primary">
-            {currentItem.recipe.name}
-          </Typography>
-          {currentItem.recipe.description && (
-            <Typography variant="body2" color="text.secondary">
-              {currentItem.recipe.description}
-            </Typography>
+        <Box sx={{ display: "flex", gap: 2 }}>
+          {/* Recipe Image */}
+          {currentItem.recipe.cover_photo_url && (
+            <Box sx={{ flexShrink: 0 }}>
+              <CardMedia
+                component="img"
+                height="80"
+                width="80"
+                image={currentItem.recipe.cover_photo_url}
+                alt={currentItem.recipe.name || currentItem.recipe.title}
+                onError={handleImageError}
+                sx={{
+                  objectFit: "cover",
+                  borderRadius: 1,
+                  border: "1px solid",
+                  borderColor: "grey.300",
+                }}
+              />
+            </Box>
           )}
-          {currentItem.notes && (
-            <Typography
-              variant="body2"
-              color="text.disabled"
-              fontStyle="italic"
+
+          {/*Recipe Details*/}
+          <Stack spacing={1} sx={{ flex: 1 }}>
+            <Typography fontWeight="medium" color="text.primary">
+              {currentItem.recipe.name || currentItem.recipe.title}
+            </Typography>
+            {currentItem.recipe.description && (
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  display: "-webkit-box",
+                  WebkitLineClamp: 2,
+                  WebkitBoxOrient: "vertical",
+                }}
+              >
+                {currentItem.recipe.description}
+              </Typography>
+            )}
+            {currentItem.recipe.cooking_time && (
+              <Typography variant="caption" color="text.disabled">
+                ⏱️ {currentItem.recipe.cooking_time} mins
+              </Typography>
+            )}
+            {currentItem.notes && (
+              <Typography
+                variant="body2"
+                color="text.disabled"
+                fontStyle="italic"
+              >
+                Note: {currentItem.notes}
+              </Typography>
+            )}
+            <Button
+              onClick={() => setShowRecipeSelector(true)}
+              variant="text"
+              size="small"
+              sx={{
+                color: "primary.main",
+                textTransform: "none",
+                alignSelf: "start",
+              }}
             >
-              Note: {currentItem.notes}
-            </Typography>
-          )}
-          <Button
-            onClick={() => setShowRecipeSelector(true)}
-            variant="text"
-            size="small"
-            sx={{
-              color: "primary.main",
-              textTransform: "none",
-              alignSelf: "start",
-            }}
-          >
-            Change Recipe
-          </Button>
-        </Stack>
+              Change Recipe
+            </Button>
+          </Stack>
+        </Box>
       ) : (
         <Box
           sx={{
