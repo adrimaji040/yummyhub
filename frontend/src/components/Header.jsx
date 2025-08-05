@@ -61,6 +61,7 @@ function Header() {
             <NavLink to="/about">About</NavLink>
             <NavLink to="/recipes">Recipes</NavLink>
             <NavLink to="/mealplans">Meal Plan</NavLink>
+            <NavLink to="/shoppinglist">Shopping List</NavLink>
           </NavLinks>
           <AuthButtons>
             {!token ? (
