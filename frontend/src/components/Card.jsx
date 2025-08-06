@@ -16,18 +16,15 @@ import { red } from "@mui/material/colors";
 const Card = ({ recipe }) => {
   const { id, cover_photo_url, title, cooking_time, rating, user_name } =
     recipe;
-
+  {
+    console.log("Recipe:", recipe);
+  }
   return (
     <MUICard sx={{ height: "100%", display: "flex", flexDirection: "column" }}>
       {console.log(recipe)}
 
       <CardActionArea>
         <CardHeader
-          avatar={
-            <Avatar sx={{ bgcolor: red[500] }} aria-label="recipe">
-              {user_name[0]?.toUpperCase() || "R"}
-            </Avatar>
-          }
           title={
             <Link
               to={`/recipe/${recipe.id}`}
