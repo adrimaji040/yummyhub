@@ -65,7 +65,7 @@ const About = () => {
     logo: {
       width: "80px",
       height: "80px",
-      background: "linear-gradient(135deg, #f44336, #ff9800)",
+      background: "linear-gradient(135deg, rgb(100 108 255), rgb(46 88 52))",
       borderRadius: "50%",
       display: "flex",
       alignItems: "center",
@@ -103,7 +103,8 @@ const About = () => {
       left: 0,
       width: "50px",
       height: "3px",
-      background: "linear-gradient(135deg, #f44336, #ff9800)",
+      background:
+        "linear-gradient(135deg, rgb(129, 199, 132), rgb(51 102 203))",
       borderRadius: "2px",
     },
     text: {
@@ -192,7 +193,7 @@ const About = () => {
       margin: 0,
     },
     contact: {
-      background: "linear-gradient(135deg, #1976d2, #9c27b0)",
+      background: "linear-gradient(135deg, rgb(25, 118, 210), rgb(46 88 52))",
       color: "white",
       padding: "2rem",
       borderRadius: "12px",

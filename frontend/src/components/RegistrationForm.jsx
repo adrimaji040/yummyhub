@@ -45,7 +45,7 @@ const RegistrationForm = () => {
         if (data.access_token) {
           // Almacena el token en localStorage
           localStorage.setItem("token", data.access_token);
-          navigate("/profile");
+          navigate("/");
         } else {
           setError("Registration failed. Please try again.");
         }
