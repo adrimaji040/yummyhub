@@ -4,62 +4,85 @@ import {
   Typography,
   Box,
   CircularProgress,
-  Stack,
-  Skeleton,
   Grid,
 } from "@mui/material";
 import RecipesByUserCards from "../components/RecipesByUserCards";
+import AllRecipes from "../components/AllRecipes";
 import { UserContext } from "../store/UserContext";
 
 const Profile = () => {
+  const { user } = useContext(UserContext); // has user.token
   const [currentUser, setCurrentUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [loadingUser, setLoadingUser] = useState(true);
+  const [errorUser, setErrorUser] = useState("");
 
-  const { user } = useContext(UserContext);
+  const [favorites, setFavorites] = useState([]);
+  const [loadingFavs, setLoadingFavs] = useState(true);
+  const [errorFavs, setErrorFavs] = useState("");
 
-  const getUser = async () => {
-    setLoading(true);
-    setError("");
-    try {
-      const response = await fetch("http://localhost:8000/api/user", {
-        headers: {
-          Accept: "application/json",
-          Authorization: `Bearer ${user?.token}`,
-        },
-      });
-
-      if (!response.ok) throw new Error("Failed to fetch user");
-      const data = await response.json();
-      setCurrentUser(data);
-    } catch (error) {
-      setError(error.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
+  // Load current user
   useEffect(() => {
-    if (user?.token) {
-      getUser();
+    const ac = new AbortController();
+    async function getUser() {
+      try {
+        setLoadingUser(true);
+        setErrorUser("");
+        const res = await fetch("http://localhost:8000/api/user", {
+          headers: {
+            Accept: "application/json",
+            Authorization: `Bearer ${user?.token}`,
+          },
+          signal: ac.signal,
+        });
+        if (!res.ok) throw new Error("Failed to fetch user");
+        const data = await res.json();
+        setCurrentUser(data);
+      } catch (e) {
+        if (e.name !== "AbortError") setErrorUser(e.message);
+      } finally {
+        setLoadingUser(false);
+      }
     }
+    if (user?.token) getUser();
+    return () => ac.abort();
   }, [user]);
 
-  if (loading)
+  // Load current user's favorites
+  useEffect(() => {
+    const ac = new AbortController();
+    async function getFavorites() {
+      try {
+        setLoadingFavs(true);
+        setErrorFavs("");
+        const res = await fetch("http://localhost:8000/api/favorites", {
+          headers: {
+            Accept: "application/json",
+            Authorization: `Bearer ${user?.token}`,
+          },
+          signal: ac.signal,
+        });
+        if (!res.ok) throw new Error("Failed to fetch favorites");
+        const data = await res.json();
+        // If backend ever paginates, swap to: setFavorites(data.data ?? [])
+        setFavorites(Array.isArray(data) ? data : data?.data ?? []);
+      } catch (e) {
+        if (e.name !== "AbortError") setErrorFavs(e.message);
+      } finally {
+        setLoadingFavs(false);
+      }
+    }
+    if (user?.token) getFavorites();
+    return () => ac.abort();
+  }, [user]);
+
+  if (loadingUser)
     return (
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          height: "100vh",
-        }}
-      >
+      <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", height: "50vh" }}>
         <CircularProgress />
       </Box>
     );
 
-  if (error) return <Typography color="error">{error}</Typography>;
+  if (errorUser) return <Typography color="error">{errorUser}</Typography>;
 
   return (
     <Container maxWidth="lg" sx={{ my: 10 }}>
@@ -75,14 +98,21 @@ const Profile = () => {
         )}
       </Box>
 
+      {/* Created by me */}
       <Typography variant="h4" gutterBottom>
-        My recipes
+        My Recipes
       </Typography>
       <Grid container>
-        <Grid size={12} sx={{ mb: 3 }}>
+        <Grid item xs={12} sx={{ mb: 3 }}>
           {currentUser && <RecipesByUserCards userId={currentUser.id} />}
         </Grid>
       </Grid>
+
+      {/* Favorited by me */}
+      <Typography variant="h4" gutterBottom sx={{ mt: 4 }}>
+        My Favorite Recipes
+      </Typography>
+      <AllRecipes recipes={favorites} loading={loadingFavs} error={errorFavs} />
     </Container>
   );
 };

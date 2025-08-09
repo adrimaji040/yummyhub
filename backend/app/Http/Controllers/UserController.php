@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 use App\Models\User;
+use App\Models\Recipe;
+Use App\Models\Favorite;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Hash;
@@ -19,8 +21,12 @@ class UserController extends Controller
 
     public function show($id){
         
-        $user = User::find($id);
-        return response()->json($user,200);
+    $user = User::findOrFail($id);
+    return response()->json([
+        'id' => $user->id,
+        'name' => $user->name,
+        'profile_picture' => $user->profile_picture,
+    ]);
     }
 
     public function store(){
@@ -104,8 +110,64 @@ class UserController extends Controller
 
     return response()->json($user, 200);
 }
+    public function profile(Request $request)
+{
+    $user = $request->user();
 
+    $favorites = \App\Models\Recipe::select('recipes.*', 'categories.name as category_name')
+        ->join('favorites', 'recipes.id', '=', 'favorites.recipe_id')
+        ->join('categories', 'recipes.category_id', '=', 'categories.id')
+        ->where('favorites.user_id', $user->id)
+        ->get();
 
+    return response()->json([
+        'user' => [
+            'id' => $user->id,
+            'name' => $user->name,
+            'email' => $user->email,
+        ],
+        'favorites' => $favorites,
+    ]);
+}   
+    //recipes by user ID
+    public function recipes($id, Request $request)
+    {
+        $search = $request->input('search');
 
+        $query = Recipe::select(
+                'recipes.*',
+                'categories.name as category_name',
+                'users.name as user_name'
+            )
+            ->join('categories', 'recipes.category_id', '=', 'categories.id')
+            ->join('users', 'recipes.user_id', '=', 'users.id')
+            ->where('recipes.user_id', $id);
+
+        if (!empty($search)) {
+            $query->where(function ($q) use ($search) {
+                $q->where('recipes.title', 'like', "%{$search}%")
+                  ->orWhere('recipes.description', 'like', "%{$search}%")
+                  ->orWhere('recipes.instructions', 'like', "%{$search}%");
+            });
+        }
+
+        return response()->json($query->get(), 200);
+    }
+    //favorites by user ID
+    public function favorites($id)
+    {
+        $favorites = Recipe::select(
+                'recipes.*',
+                'categories.name as category_name',
+                'users.name as user_name'
+            )
+            ->join('favorites', 'recipes.id', '=', 'favorites.recipe_id')
+            ->join('categories', 'recipes.category_id', '=', 'categories.id')
+            ->join('users', 'recipes.user_id', '=', 'users.id')
+            ->where('favorites.user_id', $id)
+            ->get();
+
+        return response()->json($favorites, 200);
+    }
     
 }

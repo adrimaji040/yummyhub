@@ -28,6 +28,8 @@ Route::post('/users', [UserController::class, 'store']);
 Route::post('/register', [UserController::class, 'register']);
 Route::put('/users/{id}', [UserController::class, 'update']);
 Route::delete('/users/{id}', [UserController::class, 'destroy']);
+Route::get('/users/{id}/recipes', [UserController::class, 'recipes']);
+Route::get('/users/{id}/favorites', [UserController::class, 'favorites']);
 
 // Get recipes by category ID
 Route::get('/category/{id}', [CateroryController::class, 'getRecipesByCategory']);
@@ -112,7 +114,8 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 });
 
-
+//Profile
+Route::middleware('auth:sanctum')->get('/profile', [UserController::class, 'profile']);
 
 
 

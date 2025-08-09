@@ -10,6 +10,7 @@ import {
   Box,
   Rating,
   Avatar,
+  Button,
 } from "@mui/material";
 import { styled } from "@mui/system";
 import { Link, useNavigate } from "react-router-dom";
@@ -60,6 +61,28 @@ const RecipesCards = () => {
 
   const handleCardClick = (id) => {
     navigate(`/recipe/${id}`);
+  };
+  const handleShare = async (e, recipe) => {
+    e.stopPropagation(); // prevent card click
+    const url = `${window.location.origin}/recipe/${recipe.id}`;
+
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: recipe.title,
+          text: "Check out this recipe on YummyHub!",
+          url,
+        });
+      } else if (navigator.clipboard) {
+        await navigator.clipboard.writeText(url);
+        alert("Link copied to clipboard!");
+      } else {
+        // very old browsers
+        window.prompt("Copy this link:", url);
+      }
+    } catch (err) {
+      console.error("Share failed:", err);
+    }
   };
 
   //Adriana - to show fallback images if loading fails
@@ -150,10 +173,64 @@ const RecipesCards = () => {
                 <Typography gutterBottom component="div" fontWeight={450}>
                   {recipe.title}
                 </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Total Time: {recipe.cooking_time} mins
-                </Typography>
-                <Rating name="read-only" value={recipe.rating} readOnly />
+
+                 {/* Uploader name -> navigate to /user/:id; only render if data exists */}
+                {recipe.user_id && recipe.user_name && (
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ cursor: "pointer" }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate(`/user/${recipe.user_id}`);
+                    }}
+                    title={`View ${recipe.user_name}'s profile`}
+                  >
+                    By {recipe.user_name}
+                  </Typography>
+                )}
+
+            <Box sx={{ mt: 4 }}>
+              <Typography variant="h5" gutterBottom>
+                My Recipes
+              </Typography>
+              <Grid container>
+                <Grid item xs={12} sx={{ mb: 3 }}>
+                  {currentUser && <RecipesByUserCards userId={currentUser.id} />}
+                </Grid>
+              </Grid>
+            </Box>
+
+            <Box sx={{ mt: 4 }}>
+              <Typography variant="h5" gutterBottom>
+                My Favorite Recipes
+              </Typography>
+              <Grid container spacing={2}>
+                {favorites.length > 0 ? (
+                  favorites.map((recipe) => (
+                    <Grid item xs={12} sm={6} md={4} key={recipe.id}>
+                      <Box
+                        sx={{
+                          border: "1px solid #ccc",
+                          borderRadius: 2,
+                          p: 2,
+                          height: "100%",
+                        }}
+                      >
+                        <Typography variant="subtitle1" fontWeight="bold">
+                          {recipe.title}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          Category: {recipe.category_name}
+                        </Typography>
+                      </Box>
+                    </Grid>
+                  ))
+                ) : (
+                  <Typography>No favorites yet.</Typography>
+                )}
+              </Grid>
+            </Box>
               </CardContent>
             </Card>
           </Grid>

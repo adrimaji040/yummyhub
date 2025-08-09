@@ -14,7 +14,7 @@ import {
 import { red } from "@mui/material/colors";
 
 const Card = ({ recipe }) => {
-  const { id, cover_photo_url, title, cooking_time, rating, user_name } =
+  const { id, cover_photo_url, title, cooking_time, rating, user_name, user_id, } =
     recipe;
 
   return (
@@ -24,22 +24,49 @@ const Card = ({ recipe }) => {
       <CardActionArea>
         <CardHeader
           avatar={
-            <Avatar sx={{ bgcolor: red[500] }} aria-label="recipe">
-              {user_name[0]?.toUpperCase() || "R"}
-            </Avatar>
+            user_id ? (
+              <Link
+                to={`/user/${user_id}`}
+                onClick={(e) => e.stopPropagation()}
+                style={{ display: "inline-flex" }}
+                title={`View ${user_name || "user"}'s profile`}
+              >
+                <Avatar sx={{ bgcolor: red[500] }} aria-label="recipe">
+                  {initial}
+                </Avatar>
+              </Link>
+            ) : (
+              <Avatar sx={{ bgcolor: red[500] }} aria-label="recipe">
+                {initial}
+              </Avatar>
+            )
           }
           title={
-            <Link
-              to={`/recipe/${recipe.id}`}
+             <Link
+              to={`/recipe/${id}`}
+              onClick={(e) => e.stopPropagation()}
               style={{ textDecoration: "none", color: "inherit" }}
             >
-              {recipe.title}
+              {title}
             </Link>
           }
-        />
+          subheader={
+            user_name && user_id ? (
+              <Link
+                to={`/user/${user_id}`}
+                onClick={(e) => e.stopPropagation()}
+                style={{ textDecoration: "none", color: "inherit" }}
+                title={`View ${user_name}'s profile`}
+              >
+                By {user_name}
+              </Link>
+            ) : null
+            }
+          />
 
         <Link
           to={`/recipe/${id}`}
+          onClick={(e) => e.stopPropagation()}
           style={{ textDecoration: "none", color: "inherit" }}
         >
           <CardMedia
