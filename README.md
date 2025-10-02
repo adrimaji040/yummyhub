@@ -21,11 +21,11 @@ o	Users can register, log in, and log out with proper access control.
 •	Styling: MUI (Material UI).
 •	Development Tools: Postman (API testing), Git/GitHub, Figma(for UI design, optional)
 
-**4. 5.	Limitations
+**4. Limitations **
 This version emphasizes core CRUD functions, authentication, and frontend-backend interactions. Advanced features, such as payment integrations, chat, and real-time notifications, are not included in this phase.
 
 
-**Group members:**
+**5. Group members:**
 
 - Adam Hadad
 - Adriana Jimenez
